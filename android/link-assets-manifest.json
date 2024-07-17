@@ -1,0 +1,13 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "src/assets/fonts/GowunBatang-Bold.ttf",
+      "sha1": "3c2f1a251fa2ea0eb9060f4e8a8f2b280fc5cae5"
+    },
+    {
+      "path": "src/assets/fonts/GowunBatang-Regular.ttf",
+      "sha1": "3b20e46c2ab5cdec8d687499cb791223b7d4236b"
+    }
+  ]
+}

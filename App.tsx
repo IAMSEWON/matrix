@@ -1,18 +1,24 @@
 import React from 'react';
-import { Pressable, SafeAreaView, StatusBar, Text } from 'react-native';
-import { useColorScheme } from 'nativewind';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { NavigationContainer } from '@react-navigation/native';
+
+import Calendar from '@/screens/Calendar.tsx';
+import Home from '@/screens/Home.tsx';
+
+const Tab = createBottomTabNavigator();
 
 const App = (): React.JSX.Element => {
-  const { colorScheme, toggleColorScheme } = useColorScheme();
-
   return (
-    <SafeAreaView className="flex-1 bg-white dark:bg-black">
-      <StatusBar barStyle={colorScheme === 'light' ? 'dark-content' : 'light-content'} />
-      <Pressable onPress={toggleColorScheme}>
-        <Text className="text-black dark:text-white">Press me</Text>
-      </Pressable>
-      <Text className="text-black dark:text-white">hello</Text>
-    </SafeAreaView>
+    <NavigationContainer>
+      <Tab.Navigator
+        screenOptions={{
+          headerShown: false,
+        }}
+      >
+        <Tab.Screen name="Home" component={Home} />
+        <Tab.Screen name="Settings" component={Calendar} />
+      </Tab.Navigator>
+    </NavigationContainer>
   );
 };
 

@@ -1,18 +1,9 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
 import React from 'react';
 import { Pressable, SafeAreaView, StatusBar, Text } from 'react-native';
 import { useColorScheme } from 'nativewind';
 
-function App(): React.JSX.Element {
+const App = (): React.JSX.Element => {
   const { colorScheme, toggleColorScheme } = useColorScheme();
-
-  console.log('hello');
 
   return (
     <SafeAreaView className="flex-1 bg-white dark:bg-black">
@@ -23,6 +14,6 @@ function App(): React.JSX.Element {
       <Text className="text-black dark:text-white">hello</Text>
     </SafeAreaView>
   );
-}
+};
 
 export default App;

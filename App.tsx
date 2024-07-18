@@ -1,10 +1,9 @@
+import Home from '@/screens/Home.tsx';
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 
 import Calendar from '@/screens/Calendar.tsx';
-
-import Home from '@/screens/Home.tsx';
 
 const Tab = createBottomTabNavigator();
 

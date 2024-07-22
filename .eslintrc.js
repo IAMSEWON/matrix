@@ -41,6 +41,7 @@ module.exports = {
     'unused-imports/no-unused-imports': 'error',
     'global-require': 'off', // require 사용 허용
     'import/prefer-default-export': 'off', // export default 사용 허용
+    'no-plusplus': 'off', // require 사용 허용
     'simple-import-sort/imports': [
       'error',
       {

@@ -6,11 +6,9 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: '#FF6363',
-        secondary: {
-          100: '#E2E2D5',
-          200: '#888883',
-        },
+        primary: '#5BC0DE',
+        secondary: "#f5f5f5",
+        destructive: "#FF3B30",
       },
       fontFamily: {
         'gowun-batang-regular': ['GowunBatang-Regular'],

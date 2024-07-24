@@ -1,5 +1,5 @@
-import React, { useRef } from 'react';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import React from 'react';
+import { View } from 'react-native';
 import { Folder, Settings } from 'lucide-react-native';
 
 import Header from '@/components/Header.tsx';
@@ -7,16 +7,15 @@ import Layout from '@/components/Layout.tsx';
 import MatrixLayout from '@/components/MatrixLayout.tsx';
 
 const Home = () => {
-  const sheetRef = useRef<BottomSheetModal>(null);
   return (
-    <Layout className="px-2" containerClassName="flex-1">
+    <Layout>
       <Header
         title="Home"
         icons={[
           {
             name: '카테고리',
             icon: <Folder size={23} color="black" />,
-            onPress: () => sheetRef.current?.present(),
+            onPress: () => console.log('Icon pressed'),
           },
           {
             name: '설정',
@@ -25,7 +24,22 @@ const Home = () => {
           },
         ]}
       />
-      <MatrixLayout />
+      <View className="flex-1 px-0 py-2">
+        <MatrixLayout
+          doit={{
+            onPress: () => console.log('doit'),
+          }}
+          schedule={{
+            onPress: () => console.log('schedule'),
+          }}
+          delegate={{
+            onPress: () => console.log('delegate'),
+          }}
+          eliminate={{
+            onPress: () => console.log('eliminate'),
+          }}
+        />
+      </View>
     </Layout>
   );
 };

@@ -19,8 +19,8 @@ const App = (): React.JSX.Element => {
             headerShown: false,
           }}
         >
-          <Tab.Screen name="Settings" component={Calendar} />
           <Tab.Screen name="Home" component={Home} />
+          <Tab.Screen name="Settings" component={Calendar} />
         </Tab.Navigator>
       </NavigationContainer>
     </Providers>

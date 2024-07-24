@@ -1,44 +1,38 @@
 import React from 'react';
-import { FlatList, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, FlatList, Text, TouchableOpacity, View } from 'react-native';
 import dayjs from 'dayjs';
 
-import { CalendarType } from '@/constants';
-
+// import { CalendarType } from '@/constants';
 import CalendarItem from './CalendarItem';
 
 interface IProps {
   currentDate: Date;
   setCurrentDate: React.Dispatch<React.SetStateAction<Date>>;
-  calendarType: CalendarType;
-  setCalendarType: React.Dispatch<React.SetStateAction<CalendarType>>;
+  // calendarType: CalendarType;
+  // setCalendarType: React.Dispatch<React.SetStateAction<CalendarType>>;
 }
 
+const SCREEN_WIDTH = Dimensions.get('screen').width - 16;
 // 현재 년도 기준 앞뒤로 5년 까지만 생성
 // 월/주별 토글 기능
 // 토글 시 앞뒤 컴포넌트 생성
 // 스와이프 시 월/주 변경, 해당 첫번째 일자 포커싱
-const CalendarList = ({ currentDate, setCurrentDate, calendarType, setCalendarType }: IProps) => {
+const CalendarList = ({
+  currentDate,
+  setCurrentDate,
+  // calendarType,
+  // setCalendarType
+}: IProps) => {
   const [dateList, setDateList] = React.useState<string[]>([]);
 
   const initDateList = (date: Date) => {
-    setCalendarType(calendarType ? 'month' : 'month');
-    const startYear = dayjs(date).subtract(5, 'year').year();
-    const endYear = dayjs(date).add(5, 'year').year();
-    const month = dayjs(date).month();
+    const DATE = dayjs(date);
+    const startYear = DATE.clone().subtract(5, 'year').year();
+    const endYear = DATE.clone().add(5, 'year').year();
     const makeYearMonthArr = [];
     for (let y = startYear; y < endYear; y++) {
-      if (y === startYear) {
-        for (let m = 1; m < month + 1; m++) {
-          makeYearMonthArr.push(`${y}-${m}`);
-        }
-      } else if (y === endYear) {
-        for (let m = month + 1; m < 13; m++) {
-          makeYearMonthArr.push(`${y}-${m}`);
-        }
-      } else {
-        for (let m = 1; m < 13; m++) {
-          makeYearMonthArr.push(`${y}-${m}`);
-        }
+      for (let m = 1; m < 13; m++) {
+        makeYearMonthArr.push(`${y}-${m}`);
       }
     }
     setDateList(makeYearMonthArr);
@@ -57,11 +51,21 @@ const CalendarList = ({ currentDate, setCurrentDate, calendarType, setCalendarTy
     handleChangeDate(next);
   };
 
-  const renderItem = ({ item }: { item: string }) => <CalendarItem currentDate={item} />;
+  // const handleItemChange = ({ viewableItems }: { viewableItems: Array<ViewToken<string>> }) => {
+  //   const item = viewableItems[viewableItems.length - 1];
+  //   const date = dayjs(item.item).toDate();
+  //   handleChangeDate(date);
+  // };
+
+  const renderItem = ({ item }: { item: string }) => {
+    return <CalendarItem date={item} currentDate={currentDate} onPressDay={handleChangeDate} />;
+  };
 
   React.useEffect(() => {
     initDateList(currentDate);
   }, [currentDate]);
+
+  const calendarListRef = React.useRef<FlatList>(null);
 
   return (
     <View className="w-full">
@@ -76,7 +80,20 @@ const CalendarList = ({ currentDate, setCurrentDate, calendarType, setCalendarTy
           <Text>다음달</Text>
         </TouchableOpacity>
       </View>
-      <FlatList data={dateList} renderItem={renderItem} horizontal />
+      <FlatList
+        ref={calendarListRef}
+        horizontal
+        pagingEnabled
+        data={dateList}
+        renderItem={renderItem}
+        keyExtractor={(item) => {
+          return item;
+        }}
+        snapToInterval={SCREEN_WIDTH}
+        scrollEventThrottle={16}
+        decelerationRate="fast"
+        // onViewableItemsChanged={handleItemChange}
+      />
     </View>
   );
 };

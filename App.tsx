@@ -1,14 +1,12 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
-import dayjs from 'dayjs';
 
 import Providers from '@/components/Providers.tsx';
 import Calendar from '@/screens/CalendarView';
 import Home from '@/screens/Home.tsx';
 
 const Tab = createBottomTabNavigator();
-dayjs.locale('ko');
 
 const App = (): React.JSX.Element => {
   return (

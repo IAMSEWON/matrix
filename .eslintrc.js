@@ -41,7 +41,9 @@ module.exports = {
     'unused-imports/no-unused-imports': 'error',
     'global-require': 'off', // require 사용 허용
     'import/prefer-default-export': 'off', // export default 사용 허용
-    'no-plusplus': 'off', // require 사용 허용
+    'no-plusplus': 'off', // no-plusplus 사용 허용
+    'react-native/no-inline-styles': 'off', // inline-styles 사용 허용
+    'react-hooks/exhaustive-deps': 'off', // useEffect 두번째 인자 빈배열 허용
     'simple-import-sort/imports': [
       'error',
       {

@@ -3,10 +3,11 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 
 import Providers from '@/components/Providers.tsx';
-import Calendar from '@/screens/CalendarView';
-import Home from '@/screens/Home.tsx';
+import CalendarStack from '@/navigations/CalendarStack.tsx';
+import HomeStack from '@/navigations/HomeStack.tsx';
+import { RootStackParamList } from '@/types/navigation.ts';
 
-const Tab = createBottomTabNavigator();
+const Tab = createBottomTabNavigator<RootStackParamList>();
 
 const App = (): React.JSX.Element => {
   return (
@@ -17,8 +18,8 @@ const App = (): React.JSX.Element => {
             headerShown: false,
           }}
         >
-          <Tab.Screen name="Home" component={Home} />
-          <Tab.Screen name="Settings" component={Calendar} />
+          <Tab.Screen name="Home" component={HomeStack} />
+          <Tab.Screen name="Calendar" component={CalendarStack} />
         </Tab.Navigator>
       </NavigationContainer>
     </Providers>

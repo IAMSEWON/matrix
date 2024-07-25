@@ -13,7 +13,7 @@ type HeaderProps = {
 const Header = ({ title, icons }: HeaderProps) => {
   return (
     <View className="flex-row items-center justify-between">
-      <Text className="text-2xl font-bold">{title}</Text>
+      <Text className="flex-1 text-center text-2xl font-bold">{title}</Text>
       <View className="flex-row gap-3">
         {icons?.map(({ name, icon, onPress }) => (
           <Pressable key={name} onPress={onPress}>

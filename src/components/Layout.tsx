@@ -8,16 +8,18 @@ const Layout = ({
   children,
   header,
   className,
+  top = true,
   containerClassName,
 }: {
   children: React.ReactNode;
   header?: React.ReactNode;
   className?: string;
+  top?: boolean;
   containerClassName?: string;
 }) => {
-  const { top } = useSafeAreaInsets();
+  const insets = useSafeAreaInsets();
 
-  const topStyle = { paddingTop: top };
+  const topStyle = { paddingTop: top ? insets.top : 16 };
 
   return (
     <View className={cn(`flex-1`, className)}>

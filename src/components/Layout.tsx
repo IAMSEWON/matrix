@@ -22,7 +22,7 @@ const Layout = ({
   const topStyle = { paddingTop: top ? insets.top : 16 };
 
   return (
-    <View className={cn(`flex-1`, className)}>
+    <View className={cn(`flex-1 bg-white`, className)}>
       <View>{header}</View>
       <View className={cn('flex-1 px-2', containerClassName)} style={topStyle}>
         {children}

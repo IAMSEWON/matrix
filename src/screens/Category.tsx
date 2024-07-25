@@ -1,15 +1,28 @@
-import React from 'react';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import React, { useState } from 'react';
+import { FlatList, Text, View } from 'react-native';
 import { Plus, Settings } from 'lucide-react-native';
 
+import CategoryForm from '@/components/CategoryForm.tsx';
 import Header from '@/components/Header.tsx';
 import Layout from '@/components/Layout.tsx';
-import { HomeStackParamList } from '@/types/navigation.ts';
+import useMatrixStore from '@/stores/matrix.ts';
+import { MatrixType } from '@/types/matrix.ts';
 
-type HomeNavigationProp = NativeStackNavigationProp<HomeStackParamList, 'Category'>;
+// type HomeNavigationProp = NativeStackNavigationProp<HomeStackParamList, 'Category'>;
 
-// parameter 로 네비게이션 오브젝트 받고싶어
-const Category = ({ navigation }: { navigation: HomeNavigationProp }) => {
+const CategoryItem = ({ item }: { item: MatrixType }) => {
+  return (
+    <View className="my-2 h-28 w-full flex-1 rounded p-2" style={{ backgroundColor: item.categoryBackgroundColor }}>
+      <Text className="text-2xl">{item.category}</Text>
+    </View>
+  );
+};
+
+const Category = () => {
+  const [isCategoryForm, setIsCategoryForm] = useState<boolean>(false);
+
+  const { matrixs } = useMatrixStore();
+
   return (
     <Layout>
       <Header
@@ -18,7 +31,7 @@ const Category = ({ navigation }: { navigation: HomeNavigationProp }) => {
           {
             name: '카테고리',
             icon: <Plus size={23} color="black" />,
-            onPress: () => navigation.navigate('CategoryAdd'),
+            onPress: () => setIsCategoryForm(true),
           },
           {
             name: '설정',
@@ -27,6 +40,16 @@ const Category = ({ navigation }: { navigation: HomeNavigationProp }) => {
           },
         ]}
       />
+      <View className="my-2 flex-1">
+        <FlatList
+          data={matrixs}
+          keyExtractor={(item) => `${item.id}-${item.category}`}
+          renderItem={CategoryItem}
+          // estimatedItemSize={20}
+        />
+      </View>
+
+      <CategoryForm open={isCategoryForm} onClose={() => setIsCategoryForm(false)} />
     </Layout>
   );
 };

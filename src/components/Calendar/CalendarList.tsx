@@ -23,6 +23,7 @@ const CalendarList = ({
   // calendarType,
   // setCalendarType
 }: IProps) => {
+  console.log('currentDatecurrentDate', currentDate, dayjs(currentDate).format('YYYYMMDD'));
   const [dateList, setDateList] = React.useState<string[]>([]);
 
   const initDateList = (date: Date) => {
@@ -43,11 +44,11 @@ const CalendarList = ({
     setCurrentDate(date);
   };
   const changePrevMonth = () => {
-    const prev = dayjs(currentDate).subtract(1, 'month').set('date', 1).toDate();
+    const prev = dayjs(currentDate).clone().subtract(1, 'month').set('date', 1).toDate();
     handleChangeDate(prev);
   };
   const changeNextMonth = () => {
-    const next = dayjs(currentDate).add(1, 'month').set('date', 1).toDate();
+    const next = dayjs(currentDate).clone().add(1, 'month').set('date', 1).toDate();
     handleChangeDate(next);
   };
 
@@ -57,15 +58,31 @@ const CalendarList = ({
   //   handleChangeDate(date);
   // };
 
+  const calendarListRef = React.useRef<FlatList>(null);
+  const scrollToDateIndex = React.useCallback(() => {
+    if (calendarListRef.current && dateList.length > 0) {
+      const index = dateList.findIndex((d) => dayjs(d).format('YYYYMM') === dayjs(currentDate).format('YYYYMM'));
+      calendarListRef.current.scrollToIndex({ index });
+    }
+  }, [calendarListRef, dateList, currentDate]);
+
+  const getItemLayout = (data: ArrayLike<string> | null | undefined, index: number) => ({
+    length: SCREEN_WIDTH,
+    offset: SCREEN_WIDTH * index,
+    index,
+  });
+
   const renderItem = ({ item }: { item: string }) => {
     return <CalendarItem date={item} currentDate={currentDate} onPressDay={handleChangeDate} />;
   };
 
   React.useEffect(() => {
     initDateList(currentDate);
-  }, [currentDate]);
+  }, []);
 
-  const calendarListRef = React.useRef<FlatList>(null);
+  React.useEffect(() => {
+    scrollToDateIndex();
+  }, [currentDate]);
 
   return (
     <View className="w-full">
@@ -80,20 +97,26 @@ const CalendarList = ({
           <Text>다음달</Text>
         </TouchableOpacity>
       </View>
-      <FlatList
-        ref={calendarListRef}
-        horizontal
-        pagingEnabled
-        data={dateList}
-        renderItem={renderItem}
-        keyExtractor={(item) => {
-          return item;
-        }}
-        snapToInterval={SCREEN_WIDTH}
-        scrollEventThrottle={16}
-        decelerationRate="fast"
-        // onViewableItemsChanged={handleItemChange}
-      />
+      {dateList.length > 0 && (
+        <FlatList
+          ref={calendarListRef}
+          horizontal
+          pagingEnabled
+          data={dateList}
+          renderItem={renderItem}
+          keyExtractor={(item) => {
+            return item;
+          }}
+          snapToInterval={SCREEN_WIDTH}
+          scrollEventThrottle={16}
+          decelerationRate="fast"
+          getItemLayout={getItemLayout}
+          onLayout={scrollToDateIndex}
+          maxToRenderPerBatch={10}
+          windowSize={11}
+          // onViewableItemsChanged={handleItemChange}
+        />
+      )}
     </View>
   );
 };

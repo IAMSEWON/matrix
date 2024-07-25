@@ -1,12 +1,16 @@
 import React from 'react';
 import { View } from 'react-native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Folder, Settings } from 'lucide-react-native';
 
 import Header from '@/components/Header.tsx';
 import Layout from '@/components/Layout.tsx';
 import MatrixLayout from '@/components/MatrixLayout.tsx';
+import { HomeStackParamList } from '@/types/navigation.ts';
 
-const Home = () => {
+type HomeNavigationProp = NativeStackNavigationProp<HomeStackParamList, 'Home'>;
+
+const Home = ({ navigation }: { navigation: HomeNavigationProp }) => {
   return (
     <Layout>
       <Header
@@ -15,7 +19,7 @@ const Home = () => {
           {
             name: '카테고리',
             icon: <Folder size={23} color="black" />,
-            onPress: () => console.log('Icon pressed'),
+            onPress: () => navigation.navigate('Category'),
           },
           {
             name: '설정',

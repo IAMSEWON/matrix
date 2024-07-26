@@ -23,11 +23,8 @@ const CalendarList = ({
   // calendarType,
   // setCalendarType
 }: IProps) => {
-  console.log('currentDatecurrentDate', currentDate, dayjs(currentDate).format('YYYYMMDD'));
-  const [dateList, setDateList] = React.useState<string[]>([]);
-
-  const initDateList = (date: Date) => {
-    const DATE = dayjs(date);
+  const dateList = React.useMemo(() => {
+    const DATE = dayjs(currentDate);
     const startYear = DATE.clone().subtract(5, 'year').year();
     const endYear = DATE.clone().add(5, 'year').year();
     const makeYearMonthArr = [];
@@ -36,9 +33,8 @@ const CalendarList = ({
         makeYearMonthArr.push(`${y}-${m}`);
       }
     }
-    setDateList(makeYearMonthArr);
-    // setDateList(['2024-7']);
-  };
+    return makeYearMonthArr;
+  }, [currentDate]);
 
   const handleChangeDate = (date: Date) => {
     setCurrentDate(date);
@@ -76,9 +72,7 @@ const CalendarList = ({
     return <CalendarItem date={item} currentDate={currentDate} onPressDay={handleChangeDate} />;
   };
 
-  React.useEffect(() => {
-    initDateList(currentDate);
-  }, []);
+  const keyExtractor = React.useCallback((item: string) => item, []);
 
   React.useEffect(() => {
     scrollToDateIndex();
@@ -104,16 +98,13 @@ const CalendarList = ({
           pagingEnabled
           data={dateList}
           renderItem={renderItem}
-          keyExtractor={(item) => {
-            return item;
-          }}
+          keyExtractor={keyExtractor}
           snapToInterval={SCREEN_WIDTH}
           scrollEventThrottle={16}
           decelerationRate="fast"
           getItemLayout={getItemLayout}
           onLayout={scrollToDateIndex}
-          maxToRenderPerBatch={10}
-          windowSize={11}
+          // windowSize={11}
           // onViewableItemsChanged={handleItemChange}
         />
       )}

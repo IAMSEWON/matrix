@@ -2,8 +2,9 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import CalendarView from '@/screens/CalendarView.tsx';
+import { CalendarStackParamList } from '@/types/navigation.ts';
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<CalendarStackParamList>();
 
 const CalendarStack = () => {
   return (
@@ -12,7 +13,7 @@ const CalendarStack = () => {
         headerShown: false,
       }}
     >
-      <Stack.Screen name="Calendar" component={CalendarView} />
+      <Stack.Screen name="Main" component={CalendarView} />
     </Stack.Navigator>
   );
 };

@@ -1,6 +1,7 @@
 import React from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
+import Text from '@/components/Text.tsx';
 import { cn } from '@/utils/tailwind.ts';
 
 type MartixType = {

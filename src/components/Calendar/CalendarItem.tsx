@@ -21,44 +21,38 @@ const SCREEN_WIDTH = Dimensions.get('screen').width - 16;
 // 스와이프 시 월/주 변경, 해당 첫번째 일자 포커싱
 const CalendarItem = ({ date, currentDate, onPressDay }: IProps) => {
   // 주별 아이템 리스트
-  const [dates, setDates] = React.useState<IDayItem[][]>([]);
-
   const initDates = React.useCallback(() => {
-    try {
-      // 전달 말일 구하기
-      const prevMonthLastDate = dayjs(date).clone().subtract(1, 'month').daysInMonth();
-      // 이번달 1일 요일 구하기
-      const thisMonthFirstDay = dayjs(date).clone().day();
-      // 이번달 1일 요일 구하기
-      const thisMonthLastDay = dayjs(date).clone().daysInMonth();
-      // 전체 일자 배열
-      const wholeDateArr: IDayItem[] = [];
-      const wholeDateLength = 42;
+    // 전달 말일 구하기
+    const prevMonthLastDate = dayjs(date).clone().subtract(1, 'month').daysInMonth();
+    // 이번달 1일 요일 구하기
+    const thisMonthFirstDay = dayjs(date).clone().day();
+    // 이번달 1일 요일 구하기
+    const thisMonthLastDay = dayjs(date).clone().daysInMonth();
+    // 전체 일자 배열
+    const wholeDateArr: IDayItem[] = [];
+    const wholeDateLength = 42;
 
-      for (let i = 1; i < thisMonthFirstDay + 1; i++) {
-        wholeDateArr.push({
-          yearMonth: dayjs(date).clone().subtract(1, 'month').format('YYYYMM'),
-          date: prevMonthLastDate - thisMonthFirstDay + i,
-          type: 'prev',
-        });
-      }
-      for (let i = 1; i < thisMonthLastDay + 1; i++) {
-        wholeDateArr.push({ yearMonth: dayjs(date).clone().format('YYYYMM'), date: i, type: 'this' });
-      }
-      const untilThisMonthLength = wholeDateArr.length;
-      if (untilThisMonthLength < wholeDateLength) {
-        for (let j = 1; j < wholeDateLength - untilThisMonthLength + 1; j++) {
-          wholeDateArr.push({ yearMonth: dayjs(date).clone().add(1, 'month').format('YYYYMM'), date: j, type: 'next' });
-        }
-      }
-      const formatWeekDateArr = [];
-      for (let i = 0; i < 6; i++) {
-        formatWeekDateArr.push(wholeDateArr.splice(0, 7));
-      }
-      setDates(formatWeekDateArr);
-    } catch (err) {
-      // console.log('err', err);
+    for (let i = 1; i < thisMonthFirstDay + 1; i++) {
+      wholeDateArr.push({
+        yearMonth: dayjs(date).clone().subtract(1, 'month').format('YYYYMM'),
+        date: prevMonthLastDate - thisMonthFirstDay + i,
+        type: 'prev',
+      });
     }
+    for (let i = 1; i < thisMonthLastDay + 1; i++) {
+      wholeDateArr.push({ yearMonth: dayjs(date).clone().format('YYYYMM'), date: i, type: 'this' });
+    }
+    const untilThisMonthLength = wholeDateArr.length;
+    if (untilThisMonthLength < wholeDateLength) {
+      for (let j = 1; j < wholeDateLength - untilThisMonthLength + 1; j++) {
+        wholeDateArr.push({ yearMonth: dayjs(date).clone().add(1, 'month').format('YYYYMM'), date: j, type: 'next' });
+      }
+    }
+    const formatWeekDateArr = [];
+    for (let i = 0; i < 6; i++) {
+      formatWeekDateArr.push(wholeDateArr.splice(0, 7));
+    }
+    return formatWeekDateArr;
   }, []);
 
   const onPressDayItem = React.useCallback((item: { date: number; type: 'prev' | 'this' | 'next' }) => {
@@ -84,7 +78,7 @@ const CalendarItem = ({ date, currentDate, onPressDay }: IProps) => {
         <CalendarWeekRow />
       </View>
       <View>
-        {dates.map((w, _w) => {
+        {initDates().map((w, _w) => {
           return (
             <View key={`${date}-${_w + 1}week`} className={cn(`flex-row`)}>
               {w.map((d) => {
@@ -113,4 +107,7 @@ const CalendarItem = ({ date, currentDate, onPressDay }: IProps) => {
   );
 };
 
-export default React.memo(CalendarItem);
+export default React.memo(
+  CalendarItem,
+  (prevProps, nextProps) => prevProps.date === dayjs(nextProps.currentDate).format('YYYY-M'),
+);

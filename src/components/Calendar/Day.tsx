@@ -38,4 +38,7 @@ const Day = ({ item, onPress, isSelected, isToday }: IProps) => {
     </TouchableOpacity>
   );
 };
-export default React.memo(Day);
+export default React.memo(
+  Day,
+  (prevProps, nextProps) => prevProps.isSelected === nextProps.isSelected || prevProps.isToday === nextProps.isToday,
+);

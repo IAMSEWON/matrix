@@ -33,12 +33,19 @@ const CalendarList = ({
         makeYearMonthArr.push(`${y}-${m}`);
       }
     }
+    // for (let m = 1; m < 13; m++) {
+    //   makeYearMonthArr.push(`${2024}-${m}`);
+    // }
     return makeYearMonthArr;
-  }, [currentDate]);
+  }, []);
+  // }, [currentDate]);
 
-  const handleChangeDate = (date: Date) => {
-    setCurrentDate(date);
-  };
+  const handleChangeDate = React.useCallback(
+    (date: Date) => {
+      setCurrentDate(date);
+    },
+    [currentDate],
+  );
   const changePrevMonth = () => {
     const prev = dayjs(currentDate).clone().subtract(1, 'month').set('date', 1).toDate();
     handleChangeDate(prev);
@@ -49,9 +56,12 @@ const CalendarList = ({
   };
 
   // const handleItemChange = ({ viewableItems }: { viewableItems: Array<ViewToken<string>> }) => {
-  //   const item = viewableItems[viewableItems.length - 1];
-  //   const date = dayjs(item.item).toDate();
-  //   handleChangeDate(date);
+  //   const item = viewableItems[viewableItems.length - 1]?.item;
+  //   const currentYearMonth = dayjs(currentDate).format('YYYY-M');
+  //   const changeDate = dayjs(`${item}-1`).toDate();
+  //   if (item && item !== currentYearMonth) {
+  //     handleChangeDate(changeDate);
+  //   }
   // };
 
   const calendarListRef = React.useRef<FlatList>(null);
@@ -100,12 +110,17 @@ const CalendarList = ({
           renderItem={renderItem}
           keyExtractor={keyExtractor}
           snapToInterval={SCREEN_WIDTH}
+          disableIntervalMomentum
           scrollEventThrottle={16}
           decelerationRate="fast"
           getItemLayout={getItemLayout}
           onLayout={scrollToDateIndex}
-          // windowSize={11}
           // onViewableItemsChanged={handleItemChange}
+          viewabilityConfig={{
+            itemVisiblePercentThreshold: 6,
+          }}
+          removeClippedSubviews
+          windowSize={10}
         />
       )}
     </View>

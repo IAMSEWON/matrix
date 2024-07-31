@@ -8,7 +8,6 @@ export type TodoType = {
 
 export type MatrixType = {
   id: number;
-  isSelect: boolean;
   category: string;
   categoryBackgroundColor: string;
   matrixs: {

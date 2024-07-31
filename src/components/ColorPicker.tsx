@@ -1,10 +1,8 @@
-import React, { useRef } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
-import { BottomSheetModal } from '@gorhom/bottom-sheet';
+import React, { useEffect, useRef } from 'react';
+import { Pressable, ScrollView, View } from 'react-native';
+import { BottomSheetModal, BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { FlashList } from '@shopify/flash-list';
 
-import { Button } from '@/components/Button.tsx';
 import BottomSheetModalComponent from '@/components/Sheet/BottomSheetModal.tsx';
 import { cn } from '@/utils/tailwind.ts';
 
@@ -297,33 +295,25 @@ const colorsData: Record<string, string[]> = {
   ],
 };
 
-const ColorBox = ({
-  color,
-  index,
-  onChangeColor,
-}: {
-  color: string;
-  index: number;
-  onChangeColor: (color: string) => void;
-}) => {
+const ColorBox = ({ color, index, onSelect }: { color: string; index: number; onSelect: (color: string) => void }) => {
   const firstColorRound = index === 0 ? 'rounded-l-lg' : '';
   const lastColorRound = index === 10 ? 'rounded-r-lg' : '';
 
   return (
     <Pressable
-      onPress={() => onChangeColor(color)}
+      onPress={() => onSelect(color)}
       className={cn('my-2 h-10 w-14', firstColorRound, lastColorRound)}
       style={{ backgroundColor: color }}
     />
   );
 };
 
-const ColorSection = ({ colors, onChangeColor }: { colors: string[]; onChangeColor: (color: string) => void }) => (
+const ColorSection = ({ colors, onSelect }: { colors: string[]; onSelect: (color: string) => void }) => (
   <View>
     <FlashList
       data={colors}
       showsHorizontalScrollIndicator={false}
-      renderItem={({ item, index }) => <ColorBox color={item} index={index} onChangeColor={onChangeColor} />}
+      renderItem={({ item, index }) => <ColorBox color={item} index={index} onSelect={onSelect} />}
       keyExtractor={(item) => item}
       horizontal
       estimatedItemSize={10}
@@ -332,71 +322,44 @@ const ColorSection = ({ colors, onChangeColor }: { colors: string[]; onChangeCol
 );
 
 type ColorPickerProps = {
-  onPickColor: (color: string) => void;
-  color?: string;
-  buttonComponent: React.ReactNode;
+  open: boolean;
+  onClose?: () => void;
+  onSelect: (color: string) => void;
 };
 
-const ColorPicker = ({ color = '#fff', onPickColor, buttonComponent }: ColorPickerProps) => {
+//
+const ColorPicker = ({ open, onClose, onSelect }: ColorPickerProps) => {
   const colorSheetRef = useRef<BottomSheetModal>(null);
-
-  // 애니메이 색상 상태
-  const backgroundColor = useSharedValue(color);
-
-  // 색상 선택 시 0.5초 동안 버튼 배경 애니메이션 효과
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      backgroundColor: withTiming(backgroundColor.value, { duration: 500 }),
-    };
-  });
-
-  // 색상 선택 함수
-  const onChangeColorHandler = (selectColor: string) => {
-    backgroundColor.value = selectColor;
-  };
-
   // 바텀시트 닫히면 색상 초기화 함수
   const onCancelHandler = () => {
-    backgroundColor.value = '#ffffff';
+    if (onClose) {
+      onClose();
+    }
   };
 
-  const onPickColorHandler = (pickColor: string) => {
-    onPickColor(pickColor);
+  const onSelectColor = (pickColor: string) => {
+    onSelect(pickColor);
     colorSheetRef.current?.close();
   };
 
-  const buttonWithOnPress = React.cloneElement(buttonComponent as React.ReactElement, {
-    onPress: () => colorSheetRef.current?.present(),
-  });
+  useEffect(() => {
+    if (open) {
+      colorSheetRef.current?.present();
+    } else {
+      colorSheetRef.current?.close();
+    }
+  }, [open]);
 
   return (
-    <>
-      {buttonWithOnPress}
-      <BottomSheetModalComponent
-        ref={colorSheetRef}
-        title="색상 선택"
-        snapPoints="75%"
-        onCancel={onCancelHandler}
-        footer={
-          <Button variant="outline" size="flex" onPress={() => onPickColorHandler(backgroundColor.value)}>
-            <Animated.View
-              className="h-full w-full flex-1 items-center justify-center rounded-lg"
-              style={animatedStyle}
-            >
-              <View className="h-[80%] w-[98%] items-center justify-center rounded-md bg-white">
-                <Text className="font-semibold">선택</Text>
-              </View>
-            </Animated.View>
-          </Button>
-        }
-      >
+    <BottomSheetModalProvider>
+      <BottomSheetModalComponent ref={colorSheetRef} title="색상 선택" snapPoints="75%" onCancel={onCancelHandler}>
         <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
           {Object.keys(colorsData).map((key) => (
-            <ColorSection key={key} colors={colorsData[key]} onChangeColor={onChangeColorHandler} />
+            <ColorSection key={key} colors={colorsData[key]} onSelect={onSelectColor} />
           ))}
         </ScrollView>
       </BottomSheetModalComponent>
-    </>
+    </BottomSheetModalProvider>
   );
 };
 

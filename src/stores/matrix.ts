@@ -5,9 +5,11 @@ import { createJSONStorage, persist, PersistOptions } from 'zustand/middleware';
 import { MatrixType, TodoType } from '@/types/matrix.ts';
 
 type MatrixStoreType = {
+  matrix: MatrixType | null;
   matrixs: MatrixType[];
   addMatrix: (matrix: Omit<MatrixType, 'id' | 'matrixs' | 'isSelect'>) => void;
   deleteMatrix: (id: number) => void;
+  updateMatrix: (id: number, matrix: Omit<MatrixType, 'id' | 'matrixs' | 'isSelect'>) => void;
   selectMatrix: (id: number) => void;
   addTodo: (matrixId: number, matrixType: keyof MatrixType['matrixs'], todo: Omit<TodoType, 'id'>) => void;
   deleteTodo: (matrixId: number, matrixType: keyof MatrixType['matrixs'], todoId: number) => void;
@@ -16,6 +18,7 @@ type MatrixStoreType = {
 const useMatrixStore = create(
   persist<MatrixStoreType>(
     (set) => ({
+      matrix: null,
       matrixs: [],
       addMatrix: (matrix) =>
         set((state) => {
@@ -32,8 +35,16 @@ const useMatrixStore = create(
           };
           return { matrixs: [...state.matrixs, newMatrix] };
         }),
-      selectMatrix: (id) =>
-        set((state) => ({ matrixs: state.matrixs.map((matrix) => ({ ...matrix, isSelect: matrix.id === id })) })),
+      // matrix와 matrixs 상태에 둘다 저장
+      selectMatrix: (id) => set((state) => ({ matrix: state.matrixs.find((matrix) => matrix.id === id) })),
+      updateMatrix: (id, matrix) =>
+        set((state) => {
+          const matrixIndex = state.matrixs.findIndex((_matrix) => _matrix.id === id);
+          const newMatrix = { ...state.matrixs[matrixIndex], ...matrix };
+          const matrixs = [...state.matrixs];
+          matrixs[matrixIndex] = newMatrix;
+          return { matrixs };
+        }),
       deleteMatrix: (id) => set((state) => ({ matrixs: state.matrixs.filter((matrix) => matrix.id !== id) })),
       addTodo: (matrixId, matrixType, todo) =>
         set((state) => {

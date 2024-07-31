@@ -9,6 +9,7 @@ module.exports = {
         primary: '#5BC0DE',
         secondary: "#f5f5f5",
         destructive: "#FF3B30",
+        matrix: "#d9d9d9",
       },
       fontFamily: {
         'gowun-batang-regular': ['GowunBatang-Regular'],

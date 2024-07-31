@@ -1,10 +1,11 @@
 import React from 'react';
-import { Dimensions, Text, View } from 'react-native';
+import { Dimensions, View } from 'react-native';
 import dayjs from 'dayjs';
 
 import { IDayItem } from '@/constants';
 import { cn } from '@/utils/tailwind';
 
+import CalendarWeekRow from './CalendarWeekRow';
 import Day from './Day';
 
 interface IProps {
@@ -12,8 +13,6 @@ interface IProps {
   currentDate: Date;
   onPressDay: (date: Date) => void;
 }
-
-const DAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
 const SCREEN_WIDTH = Dimensions.get('screen').width - 16;
 // 현재 년도 기준 앞뒤로 5년 까지만 생성
@@ -27,25 +26,29 @@ const CalendarItem = ({ date, currentDate, onPressDay }: IProps) => {
   const initDates = React.useCallback(() => {
     try {
       // 전달 말일 구하기
-      const prevMonthLastDate = dayjs(date).subtract(1, 'month').daysInMonth();
+      const prevMonthLastDate = dayjs(date).clone().subtract(1, 'month').daysInMonth();
       // 이번달 1일 요일 구하기
-      const thisMonthFirstDay = dayjs(date).day();
+      const thisMonthFirstDay = dayjs(date).clone().day();
       // 이번달 1일 요일 구하기
-      const thisMonthLastDay = dayjs(date).daysInMonth();
+      const thisMonthLastDay = dayjs(date).clone().daysInMonth();
       // 전체 일자 배열
-      const wholeDateArr: { date: number; type: 'prev' | 'this' | 'next' }[] = [];
+      const wholeDateArr: IDayItem[] = [];
       const wholeDateLength = 42;
 
       for (let i = 1; i < thisMonthFirstDay + 1; i++) {
-        wholeDateArr.push({ date: prevMonthLastDate - thisMonthFirstDay + i, type: 'prev' });
+        wholeDateArr.push({
+          yearMonth: dayjs(date).clone().subtract(1, 'month').format('YYYYMM'),
+          date: prevMonthLastDate - thisMonthFirstDay + i,
+          type: 'prev',
+        });
       }
       for (let i = 1; i < thisMonthLastDay + 1; i++) {
-        wholeDateArr.push({ date: i, type: 'this' });
+        wholeDateArr.push({ yearMonth: dayjs(date).clone().format('YYYYMM'), date: i, type: 'this' });
       }
       const untilThisMonthLength = wholeDateArr.length;
       if (untilThisMonthLength < wholeDateLength) {
         for (let j = 1; j < wholeDateLength - untilThisMonthLength + 1; j++) {
-          wholeDateArr.push({ date: j, type: 'next' });
+          wholeDateArr.push({ yearMonth: dayjs(date).clone().add(1, 'month').format('YYYYMM'), date: j, type: 'next' });
         }
       }
       const formatWeekDateArr = [];
@@ -73,25 +76,24 @@ const CalendarItem = ({ date, currentDate, onPressDay }: IProps) => {
   }, []);
 
   const formatCurrentDate = dayjs(currentDate).clone().format('YYYYMMDD');
+  const today = dayjs().clone().format('YYYYMMDD');
 
   return (
     <View className={cn(`items-center`)} style={{ width: SCREEN_WIDTH }}>
       <View className="flex-row">
-        {DAYS.map((d) => {
-          return (
-            <View key={d} style={{ width: SCREEN_WIDTH / 7, alignItems: 'center', paddingVertical: 6 }}>
-              <Text className="text-[#777]">{d}</Text>
-            </View>
-          );
-        })}
+        <CalendarWeekRow />
       </View>
       <View>
         {dates.map((w, _w) => {
           return (
             <View key={`${date}-${_w + 1}week`} className={cn(`flex-row`)}>
               {w.map((d) => {
-                const thisDate = dayjs(date).clone().set('date', d.date).format('YYYYMMDD');
-                const isSelected = formatCurrentDate === thisDate && d.type === 'this';
+                const thisDate = dayjs(date).clone().set('date', d.date);
+                const isSelected = formatCurrentDate === thisDate.format('YYYYMMDD') && d.type === 'this';
+                const thisDay = dayjs(`${d.yearMonth}${thisDate.format('DD')}`)
+                  .clone()
+                  .format('YYYYMMDD');
+                const isToday = today === thisDay;
 
                 return (
                   <Day
@@ -99,6 +101,7 @@ const CalendarItem = ({ date, currentDate, onPressDay }: IProps) => {
                     item={d}
                     onPress={onPressDayItem}
                     isSelected={isSelected}
+                    isToday={isToday}
                   />
                 );
               })}

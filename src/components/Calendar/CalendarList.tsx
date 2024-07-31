@@ -33,8 +33,12 @@ const CalendarList = ({
         makeYearMonthArr.push(`${y}-${m}`);
       }
     }
+    // for (let m = 1; m < 13; m++) {
+    //   makeYearMonthArr.push(`${2024}-${m}`);
+    // }
     return makeYearMonthArr;
-  }, [currentDate]);
+  }, []);
+  // }, [currentDate]);
 
   const handleChangeDate = (date: Date) => {
     setCurrentDate(date);
@@ -49,9 +53,10 @@ const CalendarList = ({
   };
 
   // const handleItemChange = ({ viewableItems }: { viewableItems: Array<ViewToken<string>> }) => {
-  //   const item = viewableItems[viewableItems.length - 1];
-  //   const date = dayjs(item.item).toDate();
-  //   handleChangeDate(date);
+  // console.log('viewableItems', viewableItems);
+  // const item = viewableItems[viewableItems.length - 1];
+  // const date = dayjs(item.item).toDate();
+  // handleChangeDate(date);
   // };
 
   const calendarListRef = React.useRef<FlatList>(null);
@@ -106,6 +111,10 @@ const CalendarList = ({
           onLayout={scrollToDateIndex}
           // windowSize={11}
           // onViewableItemsChanged={handleItemChange}
+          viewabilityConfig={{
+            itemVisiblePercentThreshold: 90,
+            waitForInteraction: true,
+          }}
         />
       )}
     </View>

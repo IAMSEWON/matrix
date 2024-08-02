@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dimensions, FlatList, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, FlatList, Text, TouchableOpacity, View, ViewToken } from 'react-native';
 import dayjs from 'dayjs';
 
 // import { CalendarType } from '@/constants';
@@ -13,10 +13,6 @@ interface IProps {
 }
 
 const SCREEN_WIDTH = Dimensions.get('screen').width - 16;
-// 현재 년도 기준 앞뒤로 5년 까지만 생성
-// 월/주별 토글 기능
-// 토글 시 앞뒤 컴포넌트 생성
-// 스와이프 시 월/주 변경, 해당 첫번째 일자 포커싱
 const CalendarList = ({
   currentDate,
   setCurrentDate,
@@ -25,8 +21,8 @@ const CalendarList = ({
 }: IProps) => {
   const dateList = React.useMemo(() => {
     const DATE = dayjs(currentDate);
-    const startYear = DATE.clone().subtract(5, 'year').year();
-    const endYear = DATE.clone().add(5, 'year').year();
+    const startYear = DATE.clone().subtract(3, 'year').year();
+    const endYear = DATE.clone().add(4, 'year').year();
     const makeYearMonthArr = [];
     for (let y = startYear; y < endYear; y++) {
       for (let m = 1; m < 13; m++) {
@@ -36,6 +32,7 @@ const CalendarList = ({
     // for (let m = 1; m < 13; m++) {
     //   makeYearMonthArr.push(`${2024}-${m}`);
     // }
+    // return ['2024-7', '2024-8'];
     return makeYearMonthArr;
   }, []);
   // }, [currentDate]);
@@ -55,14 +52,14 @@ const CalendarList = ({
     handleChangeDate(next);
   };
 
-  // const handleItemChange = ({ viewableItems }: { viewableItems: Array<ViewToken<string>> }) => {
-  //   const item = viewableItems[viewableItems.length - 1]?.item;
-  //   const currentYearMonth = dayjs(currentDate).format('YYYY-M');
-  //   const changeDate = dayjs(`${item}-1`).toDate();
-  //   if (item && item !== currentYearMonth) {
-  //     handleChangeDate(changeDate);
-  //   }
-  // };
+  const handleItemChange = ({ viewableItems }: { viewableItems: Array<ViewToken<string>> }) => {
+    const item = viewableItems[viewableItems.length - 1]?.item;
+    const currentYearMonth = dayjs(currentDate).format('YYYY-M');
+    const changeDate = dayjs(`${item}-1`).toDate();
+    if (item && item !== currentYearMonth) {
+      handleChangeDate(changeDate);
+    }
+  };
 
   const calendarListRef = React.useRef<FlatList>(null);
   const scrollToDateIndex = React.useCallback(() => {
@@ -115,12 +112,12 @@ const CalendarList = ({
           decelerationRate="fast"
           getItemLayout={getItemLayout}
           onLayout={scrollToDateIndex}
-          // onViewableItemsChanged={handleItemChange}
+          onViewableItemsChanged={handleItemChange}
           viewabilityConfig={{
-            itemVisiblePercentThreshold: 6,
+            minimumViewTime: 1000,
+            itemVisiblePercentThreshold: 5,
           }}
           removeClippedSubviews
-          windowSize={10}
         />
       )}
     </View>

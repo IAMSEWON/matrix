@@ -1,7 +1,7 @@
 import React from 'react';
 
 import CalendarList from '@/components/Calendar/CalendarList';
-import Layout from '@/components/Layout.tsx';
+import Layout from '@/components/Layout/Layout.tsx';
 import { CalendarType } from '@/constants';
 
 const CalendarView = () => {

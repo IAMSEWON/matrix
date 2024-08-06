@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
-import { Alert, Pressable, View } from 'react-native';
+import { Alert, Pressable } from 'react-native';
 import ContextMenu from 'react-native-context-menu-view';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { FlashList } from '@shopify/flash-list';
-import { Plus, Settings } from 'lucide-react-native';
 
 import CategoryForm from '@/components/CategoryForm.tsx';
-import Header from '@/components/Header.tsx';
-import Layout from '@/components/Layout.tsx';
+import Layout from '@/components/Layout/Layout.tsx';
 import Text from '@/components/Text.tsx';
 import useMatrixStore from '@/stores/matrix.ts';
 import { MatrixType } from '@/types/matrix.ts';
@@ -80,40 +78,44 @@ const Category = ({ navigation }: { navigation: CategoryNavigationProp }) => {
     setIsCategoryForm(true);
   };
 
+  // useEffect(() => {
+  //   navigation.setOptions({
+  //     headerRight: () => (
+  //       <HeaderRightIcons
+  //         icons={[
+  //           {
+  //             name: '카테고리',
+  //             icon: <Plus size={23} color={getContrastYIQ(matrix?.categoryBackgroundColor)} />,
+  //             onPress: () => setIsCategoryForm(true),
+  //           },
+  //           {
+  //             name: '설정',
+  //             icon: <Settings size={23} color={getContrastYIQ(matrix?.categoryBackgroundColor)} />,
+  //             onPress: () => console.log('Icon pressed'),
+  //           },
+  //         ]}
+  //       />
+  //     ),
+  //   });
+  // }, [navigation, matrix]);
+
   return (
-    <Layout containerClassName="px-0">
-      <Header
-        headerClassName="px-2"
-        title="카테고리"
-        icons={[
-          {
-            name: '카테고리',
-            icon: <Plus size={23} color={getContrastYIQ(matrix?.categoryBackgroundColor)} />,
-            onPress: () => setIsCategoryForm(true),
-          },
-          {
-            name: '설정',
-            icon: <Settings size={23} color={getContrastYIQ(matrix?.categoryBackgroundColor)} />,
-            onPress: () => console.log('Icon pressed'),
-          },
-        ]}
+    <Layout>
+      <FlashList
+        data={matrixs}
+        contentInsetAdjustmentBehavior="automatic"
+        keyExtractor={(item) => `${item.id}-${item.category}`}
+        renderItem={({ item }) => (
+          <CategoryItem
+            item={item}
+            selectId={matrix?.id}
+            onSelect={onSelectMatrix}
+            onModify={onModifyMatrix}
+            onDelete={deleteMatrix}
+          />
+        )}
+        estimatedItemSize={20}
       />
-      <View className="my-2 flex-1">
-        <FlashList
-          data={matrixs}
-          keyExtractor={(item) => `${item.id}-${item.category}`}
-          renderItem={({ item }) => (
-            <CategoryItem
-              item={item}
-              selectId={matrix?.id}
-              onSelect={onSelectMatrix}
-              onModify={onModifyMatrix}
-              onDelete={deleteMatrix}
-            />
-          )}
-          estimatedItemSize={20}
-        />
-      </View>
 
       <CategoryForm
         updateId={updateCategoryId}

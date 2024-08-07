@@ -3,7 +3,7 @@ import { Pressable, ScrollView, View } from 'react-native';
 import { BottomSheetModal, BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { FlashList } from '@shopify/flash-list';
 
-import BottomSheetModalComponent from '@/components/Sheet/BottomSheetModal.tsx';
+import SheetModal from '@/components/Sheet/SheetModal.tsx';
 import { cn } from '@/utils/tailwind.ts';
 
 const colorsData: Record<string, string[]> = {
@@ -352,13 +352,13 @@ const ColorPicker = ({ open, onClose, onSelect }: ColorPickerProps) => {
 
   return (
     <BottomSheetModalProvider>
-      <BottomSheetModalComponent ref={colorSheetRef} title="색상 선택" snapPoints="75%" onCancel={onCancelHandler}>
+      <SheetModal ref={colorSheetRef} title="색상 선택" snapPoints="75%" onCancel={onCancelHandler}>
         <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
           {Object.keys(colorsData).map((key) => (
             <ColorSection key={key} colors={colorsData[key]} onSelect={onSelectColor} />
           ))}
         </ScrollView>
-      </BottomSheetModalComponent>
+      </SheetModal>
     </BottomSheetModalProvider>
   );
 };

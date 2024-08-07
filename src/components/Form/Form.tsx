@@ -1,50 +1,27 @@
-import { useForm } from 'react-hook-form';
-import { Button, ScrollView } from 'react-native';
+import React from 'react';
+import { Pressable, ScrollView, Text, View } from 'react-native';
+import { X } from 'lucide-react-native';
 
-import Input from '@/components/Form/Input.tsx';
+type FormProps = {
+  children: React.ReactNode;
+  onSubmit: () => void;
+  onClose?: () => void;
+  onScroll?: () => void;
+};
 
-const Form = () => {
-  const {
-    control,
-    setFocus,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
-    defaultValues: {
-      firstName: '',
-      lastName: '',
-    },
-  });
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const onSubmit = (data: any) => console.log(data);
-
+const Form = ({ children, onSubmit, onScroll, onClose }: FormProps) => {
   return (
-    <ScrollView style={{ gap: 12 }}>
-      <Input
-        label="카테고리 이름"
-        name="firstName"
-        placeholder="First name"
-        control={control}
-        errors={errors.firstName}
-        errorMessage="테스트 첫번째 에러"
-        returnKeyType="next"
-        rules={{
-          required: 'First name is required',
-          minLength: 2,
-        }}
-        onSubmitEditing={() => setFocus('lastName')}
-      />
-      <Input
-        label="카테고리 이름"
-        name="lastName"
-        placeholder="Second name"
-        control={control}
-        errors={errors.lastName}
-        errorMessage="테스트 첫번째 에러"
-      />
+    <ScrollView onScroll={onScroll} style={{ gap: 12 }}>
+      <View className="flex-row items-center justify-between">
+        <Pressable className="h-12 items-center justify-center" onPress={onSubmit}>
+          <Text className="text-lg font-semibold">완료</Text>
+        </Pressable>
 
-      <Button title="Submit" onPress={handleSubmit(onSubmit)} />
+        <Pressable className="tems-center h-12 justify-center" onPress={onClose}>
+          <X size={27} color="black" />
+        </Pressable>
+      </View>
+      {children}
     </ScrollView>
   );
 };

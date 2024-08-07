@@ -11,7 +11,7 @@ import { X } from 'lucide-react-native';
 
 import { Button } from '@/components/Button';
 
-type BottomSheetModalProps = {
+type SheetModalProps = {
   title: string; // 제목
   snapPoints: string; // 바텀시트 높이
   children?: React.ReactNode; // 바텀시트 Body 컴포넌트
@@ -22,18 +22,9 @@ type BottomSheetModalProps = {
   onConfirmText?: string; // 확인 버튼 텍스트
 };
 
-const BottomSheetModalComponent = forwardRef(
+const SheetModal = forwardRef(
   (
-    {
-      snapPoints = '25%',
-      title,
-      onCancel,
-      onCancelText,
-      onConfirm,
-      onConfirmText,
-      children,
-      footer,
-    }: BottomSheetModalProps,
+    { snapPoints = '25%', title, onCancel, onCancelText, onConfirm, onConfirmText, children, footer }: SheetModalProps,
     ref?: ForwardedRef<BottomSheetModal>,
   ) => {
     const renderBackdrop = useCallback(
@@ -104,4 +95,4 @@ const BottomSheetModalComponent = forwardRef(
   },
 );
 
-export default BottomSheetModalComponent;
+export default SheetModal;

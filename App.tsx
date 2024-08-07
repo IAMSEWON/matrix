@@ -6,7 +6,6 @@ import { Calendar, Home, SquarePlus } from 'lucide-react-native';
 import Providers from '@/components/Providers.tsx';
 import CalendarStack from '@/navigations/CalendarStack.tsx';
 import HomeStack from '@/navigations/HomeStack.tsx';
-import MatrixStack from '@/navigations/MatrixStack.tsx';
 import useMatrixStore from '@/stores/matrix.ts';
 import { RootStackParamList } from '@/types/navigation.ts';
 import { getContrastYIQ } from '@/utils/color.ts';
@@ -36,7 +35,7 @@ const App = (): React.JSX.Element => {
                 iconComponent = (
                   <Home size={size} className="font-semibold" color={getContrastYIQ(matrix?.categoryBackgroundColor)} />
                 );
-              } else if (route.name === 'MatrixStack') {
+              } else if (route.name === 'Post') {
                 iconComponent = (
                   <SquarePlus
                     size={28}
@@ -60,12 +59,12 @@ const App = (): React.JSX.Element => {
         >
           <Tab.Screen name="HomeStack" component={HomeStack} />
           <Tab.Screen
-            name="MatrixStack"
-            component={MatrixStack}
+            name="Post"
+            component={() => null}
             listeners={({ navigation }) => ({
               tabPress: (e) => {
                 e.preventDefault();
-                navigation.navigate('MatrixStack');
+                navigation.navigate('MatrixAdd');
               },
             })}
           />

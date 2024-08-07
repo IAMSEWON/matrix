@@ -59,7 +59,7 @@ const Input = ({
             onBlur={onBlur}
             ref={ref}
             returnKeyType={returnKeyType} // 키보드 완료 버튼에 대한 속성 타입
-            className={cn('rounded-lg bg-[#D9D9D9] px-2 py-3', props.className)}
+            className={cn('rounded-lg bg-white px-2 py-3', props.className)}
             {...props}
           />
         )}

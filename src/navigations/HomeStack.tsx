@@ -5,6 +5,7 @@ import { Folder, Settings } from 'lucide-react-native';
 import HeaderRightIcons from '@/components/Layout/HeaderRightIcons.tsx';
 import Category from '@/screens/Category.tsx';
 import Home from '@/screens/Home.tsx';
+import MatrixAdd from '@/screens/MatrixAdd.tsx';
 import useMatrixStore from '@/stores/matrix.ts';
 import { HomeStackParamList } from '@/types/navigation.ts';
 import { getContrastYIQ } from '@/utils/color.ts';
@@ -58,6 +59,15 @@ const HomeStack = ({ navigation }: HomeStackProps) => {
               ]}
             />
           ),
+        }}
+      />
+      <Stack.Screen
+        name="MatrixAdd"
+        component={MatrixAdd}
+        options={{
+          title: '안녕하세요!',
+          headerShown: false,
+          presentation: 'modal',
         }}
       />
       <Stack.Screen

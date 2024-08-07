@@ -2,11 +2,13 @@ import React from 'react';
 import { Pressable, View } from 'react-native';
 
 import Text from '@/components/Text.tsx';
+import { TodoType } from '@/types/matrix.ts';
 import { cn } from '@/utils/tailwind.ts';
 
 type MartixType = {
   backgroundColor?: string;
   onPress: () => void;
+  contents?: TodoType[];
 };
 
 type MatrixLayoutProps = {
@@ -40,14 +42,30 @@ const MatrixLayout = (props: MatrixLayoutProps) => {
           style={{
             backgroundColor: doit.backgroundColor || defaultMatrixBackgroundColor,
           }}
-        />
+        >
+          {doit.contents?.map((content) => {
+            return (
+              <View key={content.id}>
+                <Text className="text-black">{content.content}</Text>
+              </View>
+            );
+          })}
+        </Pressable>
         <Pressable
           onPress={() => schedule.onPress()}
           className={cn(defaultMatrixStyle)}
           style={{
             backgroundColor: schedule.backgroundColor || defaultMatrixBackgroundColor,
           }}
-        />
+        >
+          {schedule.contents?.map((content) => {
+            return (
+              <View key={content.id}>
+                <Text className="text-black">{content.content}</Text>
+              </View>
+            );
+          })}
+        </Pressable>
       </View>
       <View className="flex-1 flex-row justify-between">
         <Text className={cn('flex-[0.1] rotate-0 self-center', textStyle)}>중요하지 않은</Text>
@@ -57,14 +75,30 @@ const MatrixLayout = (props: MatrixLayoutProps) => {
           style={{
             backgroundColor: delegate.backgroundColor || defaultMatrixBackgroundColor,
           }}
-        />
+        >
+          {delegate.contents?.map((content) => {
+            return (
+              <View key={content.id}>
+                <Text className="text-black">{content.content}</Text>
+              </View>
+            );
+          })}
+        </Pressable>
         <Pressable
           onPress={() => eliminate.onPress()}
           className={cn(defaultMatrixStyle)}
           style={{
             backgroundColor: eliminate.backgroundColor || defaultMatrixBackgroundColor,
           }}
-        />
+        >
+          {eliminate.contents?.map((content) => {
+            return (
+              <View key={content.id}>
+                <Text className="text-black">{content.content}</Text>
+              </View>
+            );
+          })}
+        </Pressable>
       </View>
     </View>
   );

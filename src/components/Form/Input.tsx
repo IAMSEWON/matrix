@@ -1,38 +1,22 @@
-import { Control, Controller, FieldError, FieldValues, RegisterOptions } from 'react-hook-form';
-import { Text, TextInput, TextInputProps, View } from 'react-native';
+import React from 'react';
+import { Control, Controller, FieldError, RegisterOptions } from 'react-hook-form';
+import { TextInput, TextInputProps, View } from 'react-native';
 
+import AnimatedBorder from '@/components/Form/AnimatedBorder.tsx';
+import ErrorMessage from '@/components/Form/ErrorMessage.tsx';
 import Label from '@/components/Form/Label.tsx';
+import { MatrixAddType } from '@/types/matrix.ts';
 import { cn } from '@/utils/tailwind.ts';
 
 type InputProps = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  control: Control<any>; // control 타입에 모든 타입 허용
-  name: string;
+  control: Control<MatrixAddType>;
+  name: keyof MatrixAddType;
   label: string;
   placeholder: string;
   errors?: FieldError;
   errorMessage?: string;
-  rules?: RegisterOptions<FieldValues>;
-} & TextInputProps; // This line combines InputProps with TextInputProps
-
-// 예제 코드
-
-/*
-<Input
-  label="카테고리 이름"
-  name="firstName"
-  placeholder="First name"
-  control={control}
-  errors={errors.firstName}
-  errorMessage="테스트 첫번째 에러"
-  returnKeyType="next"
-  rules={{
-    required: 'First name is required',
-    minLength: 2,
-  }}
-  onSubmitEditing={() => setFocus('lastName')}
-/>
-*/
+  rules?: RegisterOptions<MatrixAddType>;
+} & TextInputProps;
 
 const Input = ({
   control,
@@ -51,21 +35,25 @@ const Input = ({
       <Controller
         control={control}
         rules={rules}
-        render={({ field: { onChange, onBlur, value, ref } }) => (
-          <TextInput
-            placeholder={placeholder}
-            onChangeText={onChange}
-            value={value}
-            onBlur={onBlur}
-            ref={ref}
-            returnKeyType={returnKeyType} // 키보드 완료 버튼에 대한 속성 타입
-            className={cn('rounded-lg bg-white px-2 py-3', props.className)}
-            {...props}
-          />
-        )}
+        render={({ field: { onChange, onBlur, value, ref } }) => {
+          return (
+            <AnimatedBorder value={value} error={!!errorMessage}>
+              <TextInput
+                placeholder={placeholder}
+                onChangeText={onChange}
+                value={value}
+                onBlur={onBlur}
+                ref={ref}
+                returnKeyType={returnKeyType}
+                className={cn('h-12 rounded px-2 py-3', props.className)}
+                {...props}
+              />
+            </AnimatedBorder>
+          );
+        }}
         name={name}
       />
-      <View className="h-4">{errors && <Text className="text-red-500">{errorMessage}</Text>}</View>
+      <ErrorMessage errors={errors} message={errorMessage} />
     </View>
   );
 };

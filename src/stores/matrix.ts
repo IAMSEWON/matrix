@@ -7,11 +7,11 @@ import { MatrixType, TodoType } from '@/types/matrix.ts';
 type MatrixStoreType = {
   matrix: MatrixType | null;
   matrixs: MatrixType[];
-  addMatrix: (matrix: Omit<MatrixType, 'id' | 'matrixs' | 'isSelect'>) => void;
+  addMatrix: (matrix: Omit<MatrixType, 'id' | 'matrixs'>) => void;
   deleteMatrix: (id: number) => void;
-  updateMatrix: (id: number, matrix: Omit<MatrixType, 'id' | 'matrixs' | 'isSelect'>) => void;
+  updateMatrix: (id: number, matrix: Omit<MatrixType, 'id' | 'matrixs'>) => void;
   selectMatrix: (id: number) => void;
-  addTodo: (matrixId: number, matrixType: keyof MatrixType['matrixs'], todo: Omit<TodoType, 'id'>) => void;
+  addTodo: (matrixId: number, matrixType: keyof MatrixType['matrixs'], content: Omit<TodoType, 'id'>) => void;
   deleteTodo: (matrixId: number, matrixType: keyof MatrixType['matrixs'], todoId: number) => void;
 };
 
@@ -20,12 +20,12 @@ const useMatrixStore = create(
     (set) => ({
       matrix: null,
       matrixs: [],
+      // 새로운 매트릭스를 추가하는 함수
       addMatrix: (matrix) =>
         set((state) => {
           const newMatrix = {
             ...matrix,
             id: state.matrixs.length ? state.matrixs[state.matrixs.length - 1].id + 1 : 1,
-            isSelect: state.matrixs.length === 0,
             matrixs: {
               doit: { backgroundColor: undefined, contents: [] },
               schedule: { backgroundColor: undefined, contents: [] },
@@ -35,8 +35,9 @@ const useMatrixStore = create(
           };
           return { matrixs: [...state.matrixs, newMatrix] };
         }),
-      // matrix와 matrixs 상태에 둘다 저장
+      // 매트릭스를 선택하는 함수
       selectMatrix: (id) => set((state) => ({ matrix: state.matrixs.find((matrix) => matrix.id === id) })),
+      // 매트릭스를 업데이트하는 함수
       updateMatrix: (id, matrix) =>
         set((state) => {
           const matrixIndex = state.matrixs.findIndex((_matrix) => _matrix.id === id);
@@ -45,31 +46,39 @@ const useMatrixStore = create(
           matrixs[matrixIndex] = newMatrix;
           return { matrixs };
         }),
+      // 매트릭스를 삭제하는 함수
       deleteMatrix: (id) => set((state) => ({ matrixs: state.matrixs.filter((matrix) => matrix.id !== id) })),
+      // 매트릭스에 할 일을 추가하는 함수
       addTodo: (matrixId, matrixType, todo) =>
         set((state) => {
-          const matrixIndex = state.matrixs.findIndex((matrix) => matrix.id === matrixId);
-          const matrix = state.matrixs[matrixIndex];
-          const newTodo = {
+          // 현재 선택된 매트릭스를 업데이트
+          const selectedMatrix = state.matrixs.find((matrix) => matrix.id === matrixId);
+          if (!selectedMatrix) return state;
+
+          // 새로운 할 일 추가 로직
+          const newTodo: TodoType = {
             ...todo,
-            id: matrix.matrixs[matrixType].contents.length
-              ? matrix.matrixs[matrixType].contents[matrix.matrixs[matrixType].contents.length - 1].todo.id + 1
+            id: selectedMatrix.matrixs[matrixType].contents.length
+              ? selectedMatrix.matrixs[matrixType].contents[selectedMatrix.matrixs[matrixType].contents.length - 1].id +
+                1
               : 1,
           };
+
           const newMatrix = {
-            ...matrix,
+            ...selectedMatrix,
             matrixs: {
-              ...matrix.matrixs,
+              ...selectedMatrix.matrixs,
               [matrixType]: {
-                ...matrix.matrixs[matrixType],
-                contents: [...matrix.matrixs[matrixType].contents, newTodo],
+                ...selectedMatrix.matrixs[matrixType],
+                contents: [...selectedMatrix.matrixs[matrixType].contents, newTodo],
               },
             },
           };
-          const matrixs = [...state.matrixs];
-          matrixs[matrixIndex] = newMatrix;
-          return { matrixs };
+          const matrixs = state.matrixs.map((matrix) => (matrix.id === matrixId ? newMatrix : matrix));
+
+          return { matrixs, matrix: newMatrix };
         }),
+      // 매트릭스에서 할 일을 삭제하는 함수
       deleteTodo: (matrixId, matrixType, todoId) =>
         set((state) => {
           const matrixIndex = state.matrixs.findIndex((matrix) => matrix.id === matrixId);
@@ -80,7 +89,7 @@ const useMatrixStore = create(
               ...matrix.matrixs,
               [matrixType]: {
                 ...matrix.matrixs[matrixType],
-                contents: matrix.matrixs[matrixType].contents.filter((todo) => todo.todo.id !== todoId),
+                contents: matrix.matrixs[matrixType].contents.filter((todo) => todo.id !== todoId),
               },
             },
           };

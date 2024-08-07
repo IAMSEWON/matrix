@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, Pressable } from 'react-native';
 import ContextMenu from 'react-native-context-menu-view';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { FlashList } from '@shopify/flash-list';
+import { Plus, Settings } from 'lucide-react-native';
 
 import CategoryForm from '@/components/CategoryForm.tsx';
+import HeaderRightIcons from '@/components/Layout/HeaderRightIcons.tsx';
 import Layout from '@/components/Layout/Layout.tsx';
 import Text from '@/components/Text.tsx';
 import useMatrixStore from '@/stores/matrix.ts';
@@ -77,27 +79,28 @@ const Category = ({ navigation }: { navigation: CategoryNavigationProp }) => {
     setUpdateCategoryId(id);
     setIsCategoryForm(true);
   };
-
-  // useEffect(() => {
-  //   navigation.setOptions({
-  //     headerRight: () => (
-  //       <HeaderRightIcons
-  //         icons={[
-  //           {
-  //             name: '카테고리',
-  //             icon: <Plus size={23} color={getContrastYIQ(matrix?.categoryBackgroundColor)} />,
-  //             onPress: () => setIsCategoryForm(true),
-  //           },
-  //           {
-  //             name: '설정',
-  //             icon: <Settings size={23} color={getContrastYIQ(matrix?.categoryBackgroundColor)} />,
-  //             onPress: () => console.log('Icon pressed'),
-  //           },
-  //         ]}
-  //       />
-  //     ),
-  //   });
-  // }, [navigation, matrix]);
+  // 임시 eslint 처리 후 제거 예정
+  /* eslint-disable react/no-unstable-nested-components */
+  useEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <HeaderRightIcons
+          icons={[
+            {
+              name: '카테고리',
+              icon: <Plus size={23} color={getContrastYIQ(matrix?.categoryBackgroundColor)} />,
+              onPress: () => setIsCategoryForm(true),
+            },
+            {
+              name: '설정',
+              icon: <Settings size={23} color={getContrastYIQ(matrix?.categoryBackgroundColor)} />,
+              onPress: () => console.log('Icon pressed'),
+            },
+          ]}
+        />
+      ),
+    });
+  }, [navigation, matrix]);
 
   return (
     <Layout>

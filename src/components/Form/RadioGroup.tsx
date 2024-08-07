@@ -1,19 +1,21 @@
 import React from 'react';
-import { Control, Controller, FieldError, FieldValues, RegisterOptions } from 'react-hook-form';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Control, Controller, FieldError, RegisterOptions } from 'react-hook-form';
+import { Pressable, Text, View } from 'react-native';
 
+import AnimatedBorder from '@/components/Form/AnimatedBorder.tsx';
+import ErrorMessage from '@/components/Form/ErrorMessage.tsx';
 import Label from '@/components/Form/Label.tsx';
+import { MatrixAddType } from '@/types/matrix.ts';
 
 type RadioGroupProps = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  control: Control<any>;
-  name: string;
+  control: Control<MatrixAddType>;
+  name: keyof MatrixAddType;
   label: string;
   options: { label: string; value: string }[];
   type?: 'MATRIX' | 'DEFAULT';
   errors?: FieldError;
   errorMessage?: string;
-  rules?: RegisterOptions<FieldValues>;
+  rules?: RegisterOptions<MatrixAddType>;
 };
 
 const matrixData = ['doit', 'schedule', 'delegate', 'eliminate'];
@@ -70,39 +72,35 @@ const RadioGroup = ({
         control={control}
         rules={rules}
         render={({ field: { onChange, value } }) => (
-          <View className="flex-row gap-2">
+          <View className="flex-1 flex-row" style={{ gap: 8 }}>
             {options.map((option) => {
-              console.log('🔥🔥/ :76 - value = ', value);
-
               return (
-                <TouchableOpacity
-                  key={option.value}
-                  onPress={() => onChange(option.value)}
-                  className="flex-1 items-center justify-center"
-                  style={{
-                    paddingHorizontal: 8,
-                    paddingVertical: 12,
-                    borderRadius: 8,
-                    borderWidth: 2,
-                    borderColor: value === option.value ? '#007bff' : 'transparent',
-                    backgroundColor: 'white',
-                  }}
-                >
-                  {type === 'MATRIX' ? (
-                    <MatrixItem value={option.value} />
-                  ) : (
-                    <Text style={{ fontWeight: 'bold', color: value === option.value ? '#007bff' : '#000' }}>
-                      {option.label}
-                    </Text>
-                  )}
-                </TouchableOpacity>
+                <AnimatedBorder key={option.value} value={option.value === value ? value : ''} error={!!errorMessage}>
+                  <Pressable
+                    onPress={() => onChange(option.value)}
+                    className="flex-1 items-center justify-center"
+                    style={{
+                      paddingHorizontal: 8,
+                      paddingVertical: 12,
+                      flex: 1,
+                    }}
+                  >
+                    {type === 'MATRIX' ? (
+                      <MatrixItem value={option.value} />
+                    ) : (
+                      <Text style={{ fontWeight: 'bold', color: value === option.value ? '#007bff' : '#000' }}>
+                        {option.label}
+                      </Text>
+                    )}
+                  </Pressable>
+                </AnimatedBorder>
               );
             })}
           </View>
         )}
         name={name}
       />
-      <View className="h-4">{errors && <Text className="text-red-500">{errorMessage}</Text>}</View>
+      <ErrorMessage errors={errors} message={errorMessage} />
     </View>
   );
 };

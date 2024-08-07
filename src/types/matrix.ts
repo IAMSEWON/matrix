@@ -1,9 +1,14 @@
 export type TodoType = {
-  todo: {
-    id: number;
-    content: string;
-    isDone: boolean;
-  };
+  id: number;
+  content: string;
+  isDone: boolean;
+  endDate: Date;
+  alram: 'Y' | 'N';
+};
+
+export type MatrixMenuType = {
+  backgroundColor?: string;
+  contents: TodoType[];
 };
 
 export type MatrixType = {
@@ -11,21 +16,17 @@ export type MatrixType = {
   category: string;
   categoryBackgroundColor: string;
   matrixs: {
-    doit: {
-      backgroundColor?: string;
-      contents: TodoType[];
-    };
-    schedule: {
-      backgroundColor?: string;
-      contents: TodoType[];
-    };
-    delegate: {
-      backgroundColor?: string;
-      contents: TodoType[];
-    };
-    eliminate: {
-      backgroundColor?: string;
-      contents: TodoType[];
-    };
+    doit: MatrixMenuType;
+    schedule: MatrixMenuType;
+    delegate: MatrixMenuType;
+    eliminate: MatrixMenuType;
   };
+};
+
+export type MatrixAddType = {
+  categoryId: string;
+  content: string;
+  alram: 'Y' | 'N';
+  endDate: string;
+  importance: keyof MatrixType['matrixs'];
 };

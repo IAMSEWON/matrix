@@ -41,7 +41,7 @@ const MatrixAdd = () => {
       content: data.content,
       endDate: dayjs(data.endDate).toDate(),
       alram: data.alram,
-      isDone: false,
+      isChecked: false,
     };
 
     addTodo(matrixId, matrixType, todo);

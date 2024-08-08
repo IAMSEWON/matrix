@@ -1,7 +1,7 @@
 export type TodoType = {
   id: number;
   content: string;
-  isDone: boolean;
+  isChecked: boolean;
   endDate: Date;
   alram: 'Y' | 'N';
 };

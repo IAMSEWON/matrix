@@ -60,14 +60,15 @@ const App = (): React.JSX.Element => {
           <Tab.Screen name="HomeStack" component={HomeStack} />
           <Tab.Screen
             name="Post"
-            component={() => null}
             listeners={({ navigation }) => ({
               tabPress: (e) => {
                 e.preventDefault();
                 navigation.navigate('MatrixAdd');
               },
             })}
-          />
+          >
+            {() => null}
+          </Tab.Screen>
           <Tab.Screen name="CalendarStack" component={CalendarStack} />
         </Tab.Navigator>
       </NavigationContainer>

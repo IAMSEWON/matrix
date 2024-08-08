@@ -6,6 +6,7 @@ import HeaderRightIcons from '@/components/Layout/HeaderRightIcons.tsx';
 import Category from '@/screens/Category.tsx';
 import Home from '@/screens/Home.tsx';
 import MatrixAdd from '@/screens/MatrixAdd.tsx';
+import MatrixTodo from '@/screens/MatrixTodo.tsx';
 import useMatrixStore from '@/stores/matrix.ts';
 import { HomeStackParamList } from '@/types/navigation.ts';
 import { getContrastYIQ } from '@/utils/color.ts';
@@ -28,7 +29,6 @@ const HomeStack = ({ navigation }: HomeStackProps) => {
         headerStyle: {
           backgroundColor: matrix?.categoryBackgroundColor,
         },
-        headerLargeTitle: true,
         headerLargeTitleShadowVisible: true,
         headerTransparent: false,
         headerBackTitleVisible: false,
@@ -59,6 +59,13 @@ const HomeStack = ({ navigation }: HomeStackProps) => {
               ]}
             />
           ),
+        }}
+      />
+      <Stack.Screen
+        name="MatrixTodo"
+        component={MatrixTodo}
+        options={{
+          title: '긴급하고 중요한',
         }}
       />
       <Stack.Screen

@@ -13,6 +13,7 @@ type MatrixStoreType = {
   selectMatrix: (id: number) => void;
   addTodo: (matrixId: number, matrixType: keyof MatrixType['matrixs'], content: Omit<TodoType, 'id'>) => void;
   deleteTodo: (matrixId: number, matrixType: keyof MatrixType['matrixs'], todoId: number) => void;
+  toggleTodoChecked: (matrixId: number, matrixType: keyof MatrixType['matrixs'], todoId: number) => void;
 };
 
 const useMatrixStore = create(
@@ -77,6 +78,45 @@ const useMatrixStore = create(
           const matrixs = state.matrixs.map((matrix) => (matrix.id === matrixId ? newMatrix : matrix));
 
           return { matrixs, matrix: newMatrix };
+        }),
+      toggleTodoChecked: (matrixId, matrixType, todoId) =>
+        set((state) => {
+          const matrixIndex = state.matrixs.findIndex((matrix) => matrix.id === matrixId);
+          if (matrixIndex === -1) return state;
+
+          const matrix = state.matrixs[matrixIndex];
+          const todoIndex = matrix.matrixs[matrixType].contents.findIndex((todo) => todo.id === todoId);
+          if (todoIndex === -1) return state;
+
+          const updatedTodo = {
+            ...matrix.matrixs[matrixType].contents[todoIndex],
+            isChecked: !matrix.matrixs[matrixType].contents[todoIndex].isChecked,
+          };
+
+          const updatedMatrix = {
+            ...matrix,
+            matrixs: {
+              ...matrix.matrixs,
+              [matrixType]: {
+                ...matrix.matrixs[matrixType],
+                contents: [
+                  ...matrix.matrixs[matrixType].contents.slice(0, todoIndex),
+                  updatedTodo,
+                  ...matrix.matrixs[matrixType].contents.slice(todoIndex + 1),
+                ],
+              },
+            },
+          };
+
+          const updatedMatrixs = [...state.matrixs];
+          updatedMatrixs[matrixIndex] = updatedMatrix;
+
+          const updatedState = { matrixs: updatedMatrixs, matrix: state.matrix };
+          if (state.matrix?.id === matrixId) {
+            updatedState.matrix = updatedMatrix;
+          }
+
+          return updatedState;
         }),
       // 매트릭스에서 할 일을 삭제하는 함수
       deleteTodo: (matrixId, matrixType, todoId) =>

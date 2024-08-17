@@ -1,6 +1,9 @@
 import React from 'react';
 import { Dimensions, FlatList, Text, TouchableOpacity, View, ViewToken } from 'react-native';
 import dayjs from 'dayjs';
+import findIndex from 'lodash/findIndex';
+
+import { sameMonth } from '@/utils/date';
 
 // import { CalendarType } from '@/constants';
 import CalendarItem from './CalendarItem';
@@ -12,52 +15,48 @@ interface IProps {
   // setCalendarType: React.Dispatch<React.SetStateAction<CalendarType>>;
 }
 
-const SCREEN_WIDTH = Dimensions.get('screen').width - 16;
+const CALENDAR_WIDTH = Dimensions.get('screen').width - 16;
+const PAST_SCROLL_RANGE = 50;
+const FUTURE_SCROLL_RANGE = 50;
+let onViewableItemsChangedTimeOut: NodeJS.Timeout | null = null;
 const CalendarList = ({
   currentDate,
   setCurrentDate,
   // calendarType,
   // setCalendarType
 }: IProps) => {
-  const DATE = dayjs(currentDate);
+  const initialDate = React.useRef(dayjs(currentDate));
+  const visibleMonth = React.useRef(dayjs(currentDate));
 
-  // const [dateList, setDateList] = React.useState([]);
+  const onPressDay = React.useCallback(
+    (date: Date) => {
+      handleChangeDate(date);
+      scrollToMonth(date);
+    },
+    [currentDate],
+  );
+  const changePrevMonth = React.useCallback(() => {
+    const prev = dayjs(currentDate).clone().date(1).subtract(1, 'month').toDate();
+    handleChangeDate(prev);
+    scrollToMonth(prev);
+  }, [currentDate]);
+  const changeNextMonth = React.useCallback(() => {
+    const next = dayjs(currentDate).clone().date(1).add(1, 'month').toDate();
+    handleChangeDate(next);
+    scrollToMonth(next);
+  }, [currentDate]);
 
-  // const initDateList = React.useCallback(() => {
-  //     const makeYearMonthArr = [];
-  //     const startYear = DATE.clone()
-  //       .subtract(DATE.month() === 0 ? 1 : 0)
-  //       .year();
-  //     const endYear = DATE.clone()
-  //       .add(DATE.month() === 11 ? 2 : 1, 'year')
-  //       .year();
-  //   if (DATE.month() === 0) {
-  //       for (let y = startYear; y < endYear; y++) {
-  //         for (let m = 1; m < 13; m++) {
-  //           makeYearMonthArr.push(`${y}-${m}`);
-  //         }
-  //       }
-  //   } else if (DATE.month() === 5) {
-  //   } else if (DATE.month() === 11) {
-  //   } else {
-  //   }
-  // }, [currentDate]);
-
-  const dateList = React.useMemo(() => {
-    const makeYearMonthArr = [];
-    const startYear = DATE.clone()
-      .subtract(DATE.month() === 0 ? 1 : 0)
-      .year();
-    const endYear = DATE.clone()
-      .add(DATE.month() === 11 ? 2 : 1, 'year')
-      .year();
-    for (let y = startYear; y < endYear; y++) {
-      for (let m = 1; m < 13; m++) {
-        makeYearMonthArr.push(`${y}-${m}`);
-      }
+  const onViewableItemsChanged = React.useCallback(({ viewableItems }: { viewableItems: Array<ViewToken<string>> }) => {
+    const newVisibleMonth = dayjs(viewableItems[0]?.item);
+    if (!sameMonth(visibleMonth?.current.toDate(), newVisibleMonth.toDate())) {
+      if (onViewableItemsChangedTimeOut) clearTimeout(onViewableItemsChangedTimeOut);
+      onViewableItemsChangedTimeOut = setTimeout(() => {
+        visibleMonth.current = newVisibleMonth;
+        const changeDate = dayjs(newVisibleMonth).clone().date(1).toDate();
+        handleChangeDate(changeDate);
+      }, 200);
     }
-    return makeYearMonthArr;
-  }, [DATE]);
+  }, []);
 
   const handleChangeDate = React.useCallback(
     (date: Date) => {
@@ -65,58 +64,60 @@ const CalendarList = ({
     },
     [currentDate],
   );
-  const changePrevMonth = React.useCallback(() => {
-    const prev = dayjs(currentDate).clone().subtract(1, 'month').set('date', 1).toDate();
-    handleChangeDate(prev);
-  }, [currentDate]);
-  const changeNextMonth = React.useCallback(() => {
-    const next = dayjs(currentDate).clone().add(1, 'month').set('date', 1).toDate();
-    handleChangeDate(next);
-  }, [currentDate]);
+  const scrollToMonth = React.useCallback((date: Date) => {
+    const currentScroll = dayjs(initialDate.current).clone().date(1);
+    const scrollTo = dayjs(date).clone().date(1);
+    const diffMonths = Math.round(scrollTo.diff(currentScroll, 'month', true));
+    const scrollAmount = CALENDAR_WIDTH * (PAST_SCROLL_RANGE + diffMonths);
+    if (scrollAmount !== 0) {
+      visibleMonth.current = scrollTo;
+      calendarListRef?.current?.scrollToOffset({ offset: scrollAmount, animated: true });
+    }
+  }, []);
 
-  const handleItemChange = React.useCallback(
-    ({ viewableItems }: { viewableItems: Array<ViewToken<string>> }) => {
-      const item = viewableItems[viewableItems.length - 1]?.item;
-      const currentYearMonth = dayjs(currentDate).format('YYYY-M');
-      if (item && item !== currentYearMonth) {
-        const changeDate = dayjs(`${item}-1`).toDate();
-        if (dayjs(changeDate).isValid()) {
-          handleChangeDate(changeDate);
-        }
-      }
+  const renderItem = React.useCallback(
+    (props: { item: string }) => {
+      return <CalendarItem date={props.item} currentDate={currentDate} onPressDay={onPressDay} />;
     },
     [currentDate],
   );
+  const items: string[] = React.useMemo(() => {
+    const months = [];
+    for (let i = 0; i <= PAST_SCROLL_RANGE + FUTURE_SCROLL_RANGE; i++) {
+      const rangeDate = initialDate.current.clone().add(i - PAST_SCROLL_RANGE, 'month');
+      months.push(rangeDate.format('YYYY-MM-DD'));
+    }
+    return months;
+  }, [PAST_SCROLL_RANGE, FUTURE_SCROLL_RANGE]);
+
+  const initialDateIndex = React.useMemo(() => {
+    return findIndex(items, function (item) {
+      return item.toString() === initialDate.current?.format('YYYY-MM-DD');
+    });
+  }, [items]);
 
   const calendarListRef = React.useRef<FlatList>(null);
-  const scrollToDateIndex = React.useCallback(() => {
-    if (calendarListRef.current && dateList.length > 0) {
-      const index = dateList.findIndex((d) => dayjs(d).format('YYYYMM') === dayjs(currentDate).format('YYYYMM'));
-      if (index >= 0) {
-        calendarListRef.current.scrollToIndex({ index });
-      }
-    }
-  }, [calendarListRef, dateList, currentDate]);
 
   const getItemLayout = React.useCallback(
     (data: ArrayLike<string> | null | undefined, index: number) => ({
-      length: SCREEN_WIDTH,
-      offset: SCREEN_WIDTH * index,
+      length: CALENDAR_WIDTH,
+      offset: CALENDAR_WIDTH * index,
       index,
     }),
     [],
   );
 
-  const renderItem = ({ item }: { item: string }) => {
-    return <CalendarItem date={item} currentDate={currentDate} onPressDay={handleChangeDate} />;
-  };
-
   const keyExtractor = React.useCallback((item: string) => item, []);
 
-  React.useEffect(() => {
-    scrollToDateIndex();
-    // initDateList();
-  }, [currentDate]);
+  const viewabilityConfig = React.useRef({
+    viewAreaCoveragePercentThreshold: 20,
+  });
+  const viewabilityConfigCallbackPairs = React.useRef([
+    {
+      viewabilityConfig: viewabilityConfig.current,
+      onViewableItemsChanged,
+    },
+  ]);
 
   return (
     <View className="w-full">
@@ -131,31 +132,21 @@ const CalendarList = ({
           <Text>다음달</Text>
         </TouchableOpacity>
       </View>
-      {dateList.length > 0 && (
-        <FlatList
-          ref={calendarListRef}
-          horizontal
-          pagingEnabled
-          data={dateList}
-          renderItem={renderItem}
-          keyExtractor={keyExtractor}
-          snapToInterval={SCREEN_WIDTH}
-          disableIntervalMomentum
-          scrollEventThrottle={16}
-          decelerationRate="fast"
-          getItemLayout={getItemLayout}
-          onLayout={scrollToDateIndex}
-          onViewableItemsChanged={handleItemChange}
-          viewabilityConfig={{
-            minimumViewTime: 200,
-            viewAreaCoveragePercentThreshold: 95,
-            // itemVisiblePercentThreshold: 75,
-            // waitForInteraction: true,
-          }}
-          removeClippedSubviews
-          showsHorizontalScrollIndicator={false}
-        />
-      )}
+      <FlatList
+        ref={calendarListRef}
+        horizontal
+        pagingEnabled
+        data={items}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
+        initialNumToRender={1}
+        initialScrollIndex={initialDateIndex}
+        viewabilityConfigCallbackPairs={viewabilityConfigCallbackPairs.current}
+        getItemLayout={getItemLayout}
+        maxToRenderPerBatch={3}
+        windowSize={11}
+        // showsHorizontalScrollIndicator={false}
+      />
     </View>
   );
 };

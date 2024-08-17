@@ -15,10 +15,6 @@ interface IProps {
 }
 
 const SCREEN_WIDTH = Dimensions.get('screen').width - 16;
-// 현재 년도 기준 앞뒤로 5년 까지만 생성
-// 월/주별 토글 기능
-// 토글 시 앞뒤 컴포넌트 생성
-// 스와이프 시 월/주 변경, 해당 첫번째 일자 포커싱
 const CalendarItem = ({ date, currentDate, onPressDay }: IProps) => {
   const thisMonth = dayjs(date).clone();
   // 주별 아이템 리스트
@@ -58,11 +54,11 @@ const CalendarItem = ({ date, currentDate, onPressDay }: IProps) => {
 
   const onPressDayItem = React.useCallback((item: { date: number; type: 'prev' | 'this' | 'next' }) => {
     if (item.type === 'prev') {
-      onPressDay(dayjs(date).clone().set('date', item.date).subtract(1, 'month').toDate());
+      onPressDay(new Date(dayjs(date).clone().subtract(1, 'month').set('date', item.date).toDate()));
     } else if (item.type === 'next') {
-      onPressDay(dayjs(date).clone().set('date', item.date).add(1, 'month').toDate());
+      onPressDay(new Date(dayjs(date).clone().add(1, 'month').set('date', item.date).toDate()));
     } else {
-      onPressDay(dayjs(date).clone().set('date', item.date).toDate());
+      onPressDay(new Date(dayjs(date).clone().set('date', item.date).toDate()));
     }
   }, []);
 
@@ -95,10 +91,13 @@ const CalendarItem = ({ date, currentDate, onPressDay }: IProps) => {
 };
 
 export default React.memo(CalendarItem, (prevProps, nextProps) => {
-  const prevNextMonthDiff = dayjs(prevProps.date).diff(nextProps.currentDate, 'month');
-  return prevNextMonthDiff > 1 || prevNextMonthDiff < 0;
-  // return (
-  //   prevProps.date !==
-  //   `${new Date(nextProps.currentDate).getFullYear()}-${new Date(nextProps.currentDate).getMonth() + 1}`
-  // );
+  // 날짜가 변경된 경우, 지난달과 변경된달을 제외하고 메모이징, 지난달은 선택했던 날짜 해제하기 위해 리렌더링
+  const prevNextMonthDiff = Math.round(
+    dayjs(prevProps.date).set('date', 1).diff(dayjs(nextProps.currentDate).set('date', 1), 'month', true),
+  );
+  // 과거로 변경된 경우
+  if (prevProps.currentDate > nextProps.currentDate) {
+    return prevNextMonthDiff !== 1 && prevNextMonthDiff !== 0;
+  } // 미래로 변경된 변경
+  return prevNextMonthDiff !== -1 && prevNextMonthDiff !== 0;
 });

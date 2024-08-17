@@ -49,11 +49,14 @@ const Day = ({ item, date, onPress, currentDate }: IProps) => {
   );
 };
 export default React.memo(Day, (prevProps, nextProps) => {
-  const prevFormatCurrentDate = dayjs(prevProps.currentDate).format('YYYYMMDD');
-  const nextFormatCurrentDate = dayjs(nextProps.currentDate).format('YYYYMMDD');
+  const prevFormatCurrentDate = dayjs(prevProps.currentDate).format('YYYYMMDD'); // 이전에 선택된 날짜
+  const nextFormatCurrentDate = dayjs(nextProps.currentDate).format('YYYYMMDD'); // 현재 선택된 날짜
   const thisDate = dayjs(prevProps.date).clone().set('date', prevProps.item.date);
-  const prevIsSelected = prevFormatCurrentDate === thisDate.format('YYYYMMDD') && prevProps.item.type === 'this';
-  const nextIsSelected = nextFormatCurrentDate === thisDate.format('YYYYMMDD') && nextProps.item.type === 'this';
+  // 이번달로 렌더링된 날짜 컴포넌트 && 이전 선택 여부
+  const prevIsSelected = prevProps.item.type === 'this' && prevFormatCurrentDate === thisDate.format('YYYYMMDD');
+  // 이번달로 렌더링된 날짜 컴포넌트 && 현재 선택 여부
+  const nextIsSelected = nextProps.item.type === 'this' && nextFormatCurrentDate === thisDate.format('YYYYMMDD');
 
-  return prevIsSelected === nextIsSelected && prevProps.date !== dayjs(nextProps.currentDate).format('YYYY-M');
+  // 이전,현재 선택 여부가 동일하면(이전,현재 둘다 선택되지 않은경우) 메모이징
+  return prevIsSelected === nextIsSelected;
 });

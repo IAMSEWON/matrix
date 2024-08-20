@@ -18,8 +18,18 @@ const Form = ({ isVisble, children, onSubmit, onClose }: FormProps) => {
   const { colorScheme } = useColorScheme();
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <BottomSheetModalProvider>
-        <Modal animationType="slide" presentationStyle="pageSheet" visible={isVisble} style={{ flex: 1 }}>
+      <Modal
+        animationType="slide"
+        presentationStyle="pageSheet"
+        visible={isVisble}
+        style={{ flex: 1 }}
+        onRequestClose={() => {
+          if (onClose) {
+            onClose();
+          }
+        }}
+      >
+        <BottomSheetModalProvider>
           <Layout>
             <View className="flex-row items-center justify-between">
               <Pressable className="h-12 w-12 items-center justify-center" onPress={onSubmit}>
@@ -33,8 +43,8 @@ const Form = ({ isVisble, children, onSubmit, onClose }: FormProps) => {
               {children}
             </View>
           </Layout>
-        </Modal>
-      </BottomSheetModalProvider>
+        </BottomSheetModalProvider>
+      </Modal>
     </GestureHandlerRootView>
   );
 };

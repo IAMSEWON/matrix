@@ -67,13 +67,6 @@ const RadioGroup = ({
   rules,
   darkMode,
 }: RadioGroupProps) => {
-  const getTextColor = (value: string, optionValue: string) => {
-    if (value === optionValue) {
-      return '#007bff';
-    }
-    return darkMode ? 'white' : '#000';
-  };
-
   return (
     <View className="flex-col" style={{ gap: 8, height: 102 }}>
       <Label label={label} />
@@ -100,7 +93,7 @@ const RadioGroup = ({
                       <Text
                         style={{
                           fontWeight: 'bold',
-                          color: getTextColor(value, option.value),
+                          color: darkMode ? '#fff' : '#1E1F23',
                         }}
                       >
                         {option.label}

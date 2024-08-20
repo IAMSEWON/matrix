@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Alert, Keyboard, Platform, Pressable, View } from 'react-native';
+import { Alert, Platform, Pressable, View } from 'react-native';
 import dayjs from 'dayjs';
 import { SquarePlus } from 'lucide-react-native';
 import { useColorScheme } from 'nativewind';
@@ -26,6 +26,7 @@ const MatrixAdd = () => {
     control,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<MatrixAddType>({
     defaultValues: {
       categoryId: matrix?.id.toString(),
@@ -45,6 +46,18 @@ const MatrixAdd = () => {
     } else {
       setIsVisibleMatrixAdd(true);
     }
+  };
+
+  const onCloseHandler = () => {
+    setIsVisibleMatrixAdd(false);
+
+    reset({
+      categoryId: matrix?.id.toString(),
+      content: '',
+      importance: 'doit',
+      endDate: '',
+      alram: 'N',
+    });
   };
 
   const onSubmitHandler = (data: MatrixAddType) => {
@@ -69,18 +82,14 @@ const MatrixAdd = () => {
       >
         <SquarePlus size={28} className="font-semibold" color={colorScheme === 'light' ? 'black' : 'white'} />
       </Pressable>
-      <Form
-        isVisble={isVisibleMatrixAdd}
-        onScroll={() => Keyboard.dismiss()}
-        onClose={() => setIsVisibleMatrixAdd(false)}
-        onSubmit={handleSubmit(onSubmitHandler)}
-      >
+      <Form isVisble={isVisibleMatrixAdd} onClose={onCloseHandler} onSubmit={handleSubmit(onSubmitHandler)}>
         <Dropdown
           label="카테고리 선택"
           placeholder="카테고리를 선택해주세요"
           name="categoryId"
           control={control}
           errors={errors.categoryId}
+          darkMode={colorScheme === 'dark'}
           options={matrixs.map((item) => {
             return {
               label: item.category,
@@ -95,6 +104,7 @@ const MatrixAdd = () => {
           control={control}
           errors={errors.content}
           errorMessage={errors.content?.message}
+          darkMode={colorScheme === 'dark'}
           rules={{
             required: '할 일을 작성해주세요.',
             minLength: 1,
@@ -126,6 +136,7 @@ const MatrixAdd = () => {
               isDate: (value) => !Number.isNaN(Date.parse(value)) || '유효한 날짜를 입력해주세요.',
             },
           }}
+          darkMode={colorScheme === 'dark'}
         />
         <RadioGroup
           label="푸시 알림"

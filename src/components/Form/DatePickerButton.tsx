@@ -20,6 +20,7 @@ type DatePickerButtonProps = {
   placeholder: string;
   errorMessage?: string;
   rules?: RegisterOptions<MatrixAddType>;
+  darkMode?: boolean;
 };
 
 const DatePickerButton = ({
@@ -31,6 +32,7 @@ const DatePickerButton = ({
   errorMessage,
   placeholder,
   rules,
+  darkMode,
 }: DatePickerButtonProps) => {
   const [date, setDate] = useState<Date>(dayjs().toDate());
 
@@ -56,7 +58,7 @@ const DatePickerButton = ({
                   paddingVertical: 12,
                 }}
               >
-                <Text style={{ fontWeight: 'bold', color: value ? '#007bff' : '#CBCBCD' }}>
+                <Text style={{ fontWeight: 'bold', color: darkMode ? '#fff' : '#1E1F23' }}>
                   {(value && dayjs(value).format('YYYY년 MM월 DD일 hh시 mm분')) || placeholder}
                 </Text>
               </TouchableOpacity>
@@ -75,7 +77,9 @@ const DatePickerButton = ({
                 <DatePicker
                   style={{
                     flex: 1,
+                    marginLeft: 14,
                   }}
+                  theme={darkMode ? 'dark' : 'light'}
                   locale="ko"
                   date={date}
                   minimumDate={new Date()}

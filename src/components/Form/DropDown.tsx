@@ -17,9 +17,20 @@ type DropDownProps = {
   errorMessage?: string;
   rules?: RegisterOptions<MatrixAddType>;
   options: { label: string; value: string }[];
+  darkMode?: boolean;
 };
 
-const Dropdown = ({ options, control, name, label, placeholder, errors, errorMessage, rules }: DropDownProps) => {
+const Dropdown = ({
+  options,
+  control,
+  name,
+  label,
+  placeholder,
+  errors,
+  errorMessage,
+  rules,
+  darkMode,
+}: DropDownProps) => {
   return (
     <View className="flex-col" style={{ gap: 8, height: 102 }}>
       <Label label={label} />
@@ -40,6 +51,9 @@ const Dropdown = ({ options, control, name, label, placeholder, errors, errorMes
               placeholderStyle={{ color: '#CBCBCD' }}
               containerStyle={{
                 borderRadius: 8,
+              }}
+              selectedTextStyle={{
+                color: darkMode ? '#fff' : '#1E1F23',
               }}
               labelField="label"
               valueField="value"

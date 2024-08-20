@@ -8,8 +8,10 @@ import {
   useBottomSheetModal,
 } from '@gorhom/bottom-sheet';
 import { X } from 'lucide-react-native';
+import { useColorScheme } from 'nativewind';
 
 import { Button } from '@/components/Button';
+import { cn } from '@/utils/tailwind.ts';
 
 type SheetModalProps = {
   title: string; // 제목
@@ -24,9 +26,11 @@ type SheetModalProps = {
 
 const SheetModal = forwardRef(
   (
-    { snapPoints = '25%', title, onCancel, onCancelText, onConfirm, onConfirmText, children, footer }: SheetModalProps,
+    { snapPoints = '25%', title, onCancel, onConfirm, onConfirmText, children, footer }: SheetModalProps,
     ref?: ForwardedRef<BottomSheetModal>,
   ) => {
+    const { colorScheme } = useColorScheme();
+
     const renderBackdrop = useCallback(
       (props: BottomSheetBackdropProps) => (
         <BottomSheetBackdrop {...props} pressBehavior="close" appearsOnIndex={0} disappearsOnIndex={-1} />
@@ -51,11 +55,14 @@ const SheetModal = forwardRef(
         ref={ref}
         snapPoints={[snapPoints]}
         index={0}
+        backgroundStyle={{ backgroundColor: colorScheme === 'light' ? 'white' : '#272A2E' }}
       >
         <BottomSheetView style={{ alignItems: 'center' }}>
-          <Text className="text-xl font-semibold text-black">{title}</Text>
+          <Text className={cn('text-xl font-semibold', colorScheme === 'light' ? 'text-black' : 'text-white')}>
+            {title}
+          </Text>
           <Pressable className="absolute right-4 top-0" onPress={() => dismiss()}>
-            <X className="text-black" size={30} />
+            <X className={cn(colorScheme === 'light' ? 'text-black' : 'text-white')} size={30} />
           </Pressable>
         </BottomSheetView>
         <BottomSheetView style={{ flex: 1, marginBottom: 20, marginTop: 10, marginHorizontal: 20, gap: 10 }}>
@@ -64,18 +71,6 @@ const SheetModal = forwardRef(
             <BottomSheetView style={{ flexDirection: 'row', gap: 8 }}>{footer}</BottomSheetView>
           ) : (
             <BottomSheetView style={{ flexDirection: 'row', gap: 8 }}>
-              {onCancel && (
-                <Button
-                  variant="outline"
-                  onPress={() => {
-                    dismiss();
-                    onCancel();
-                  }}
-                  size="flex"
-                >
-                  <Text className="text-black">{onCancelText || '취소'}</Text>
-                </Button>
-              )}
               {onConfirm && (
                 <Button
                   onPress={() => {
@@ -84,7 +79,7 @@ const SheetModal = forwardRef(
                   }}
                   size="flex"
                 >
-                  <Text className="text-black">{onConfirmText || '완료'}</Text>
+                  <Text className="text-white">{onConfirmText || '완료'}</Text>
                 </Button>
               )}
             </BottomSheetView>

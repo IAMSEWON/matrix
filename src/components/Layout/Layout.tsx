@@ -1,16 +1,24 @@
 import React from 'react';
-import { View } from 'react-native';
+import { StyleProp, View, ViewStyle } from 'react-native';
+import { useColorScheme } from 'nativewind';
 
-import useMatrixStore from '@/stores/matrix.ts';
 import { cn } from '@/utils/tailwind.ts';
 
-const Layout = ({ children, className }: { children: React.ReactNode; className?: string }) => {
-  const { matrix } = useMatrixStore();
+const Layout = ({
+  children,
+  className,
+  style,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  style?: StyleProp<ViewStyle>;
+}) => {
+  const { colorScheme } = useColorScheme();
 
   return (
     <View
       className={cn('flex-1 px-2 py-2', className)}
-      style={{ backgroundColor: matrix?.categoryBackgroundColor || '#fff' }}
+      style={[{ backgroundColor: colorScheme === 'light' ? '#fff' : '#1E1F23' }, style]}
     >
       {children}
     </View>

@@ -2,7 +2,7 @@ import { MatrixType } from '@/types/matrix.ts';
 
 export type RootStackParamList = {
   HomeStack: undefined;
-  Post: undefined;
+  MatrixAdd: undefined;
   CalendarStack: undefined;
 };
 export type HomeStackParamList = {
@@ -10,7 +10,9 @@ export type HomeStackParamList = {
   MatrixTodo: {
     matrixType: keyof MatrixType['matrixs'];
   };
-  MatrixAdd: undefined;
+  MatrixAdd: {
+    matrixType: keyof MatrixType['matrixs'];
+  };
   Category: undefined;
 };
 export type MatrixStackParamList = {

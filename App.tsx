@@ -1,19 +1,24 @@
 import React from 'react';
+import { Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
-import { Calendar, Home, SquarePlus } from 'lucide-react-native';
+import { Calendar, Home } from 'lucide-react-native';
+import { useColorScheme } from 'nativewind';
 
-import Providers from '@/components/Providers.tsx';
+import Providers from '@/components/Providers/Providers.tsx';
 import CalendarStack from '@/navigations/CalendarStack.tsx';
 import HomeStack from '@/navigations/HomeStack.tsx';
-import useMatrixStore from '@/stores/matrix.ts';
+import MatrixAdd from '@/screens/MatrixAdd.tsx';
 import { RootStackParamList } from '@/types/navigation.ts';
-import { getContrastYIQ } from '@/utils/color.ts';
 
 const Tab = createBottomTabNavigator<RootStackParamList>();
 
 const App = (): React.JSX.Element => {
-  const { matrix } = useMatrixStore();
+  const { colorScheme } = useColorScheme();
+
+  const color = colorScheme === 'light' ? '#fff' : '#1E1F23';
+  const iconColor = colorScheme === 'light' ? '#1E1F23' : '#fff';
+  const tabBorderColor = colorScheme === 'light' ? '#d9d9d9' : '#313237';
 
   return (
     <Providers>
@@ -21,10 +26,11 @@ const App = (): React.JSX.Element => {
         <Tab.Navigator
           screenOptions={({ route }) => ({
             tabBarStyle: {
-              backgroundColor: matrix?.categoryBackgroundColor,
+              backgroundColor: color,
+              borderTopColor: tabBorderColor,
             },
             tabBarIconStyle: {
-              top: 14,
+              top: Platform.OS === 'android' ? 8 : 14,
             },
             headerShown: false,
             tabBarLabel: '',
@@ -32,25 +38,9 @@ const App = (): React.JSX.Element => {
               let iconComponent: React.ReactNode;
 
               if (route.name === 'HomeStack') {
-                iconComponent = (
-                  <Home size={size} className="font-semibold" color={getContrastYIQ(matrix?.categoryBackgroundColor)} />
-                );
-              } else if (route.name === 'Post') {
-                iconComponent = (
-                  <SquarePlus
-                    size={28}
-                    className="font-semibold"
-                    color={getContrastYIQ(matrix?.categoryBackgroundColor)}
-                  />
-                );
+                iconComponent = <Home size={size} color={iconColor} />;
               } else if (route.name === 'CalendarStack') {
-                iconComponent = (
-                  <Calendar
-                    size={size}
-                    className="font-semibold"
-                    color={getContrastYIQ(matrix?.categoryBackgroundColor)}
-                  />
-                );
+                iconComponent = <Calendar size={size} color={iconColor} />;
               }
 
               return iconComponent;
@@ -59,13 +49,15 @@ const App = (): React.JSX.Element => {
         >
           <Tab.Screen name="HomeStack" component={HomeStack} />
           <Tab.Screen
-            name="Post"
-            listeners={({ navigation }) => ({
-              tabPress: (e) => {
-                e.preventDefault();
-                navigation.navigate('MatrixAdd');
+            name="MatrixAdd"
+            options={{
+              tabBarButton: () => {
+                return <MatrixAdd />;
               },
-            })}
+              tabBarIconStyle: {
+                top: Platform.OS === 'android' ? 10 : 14,
+              },
+            }}
           >
             {() => null}
           </Tab.Screen>

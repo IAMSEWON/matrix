@@ -1,4 +1,5 @@
 import React from 'react';
+import { Text } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import Layout from '@/components/Layout/Layout.tsx';
@@ -13,36 +14,40 @@ const Home = ({ navigation }: { navigation: HomeNavigationProp }) => {
 
   return (
     <Layout>
-      <MatrixLayout
-        doit={{
-          onPress: () =>
-            navigation.navigate('MatrixTodo', {
-              matrixType: 'doit',
-            }),
-          contents: matrix?.matrixs.doit.contents,
-        }}
-        schedule={{
-          onPress: () =>
-            navigation.navigate('MatrixTodo', {
-              matrixType: 'schedule',
-            }),
-          contents: matrix?.matrixs.schedule.contents,
-        }}
-        delegate={{
-          onPress: () =>
-            navigation.navigate('MatrixTodo', {
-              matrixType: 'delegate',
-            }),
-          contents: matrix?.matrixs.delegate.contents,
-        }}
-        eliminate={{
-          onPress: () =>
-            navigation.navigate('MatrixTodo', {
-              matrixType: 'eliminate',
-            }),
-          contents: matrix?.matrixs.eliminate.contents,
-        }}
-      />
+      {matrix ? (
+        <MatrixLayout
+          doit={{
+            onPress: () =>
+              navigation.navigate('MatrixTodo', {
+                matrixType: 'doit',
+              }),
+            contents: matrix?.matrixs.doit.contents,
+          }}
+          schedule={{
+            onPress: () =>
+              navigation.navigate('MatrixTodo', {
+                matrixType: 'schedule',
+              }),
+            contents: matrix?.matrixs.schedule.contents,
+          }}
+          delegate={{
+            onPress: () =>
+              navigation.navigate('MatrixTodo', {
+                matrixType: 'delegate',
+              }),
+            contents: matrix?.matrixs.delegate.contents,
+          }}
+          eliminate={{
+            onPress: () =>
+              navigation.navigate('MatrixTodo', {
+                matrixType: 'eliminate',
+              }),
+            contents: matrix?.matrixs.eliminate.contents,
+          }}
+        />
+      ) : (
+        <Text>카테고리가 등록되어있지 않습니다..!</Text>
+      )}
     </Layout>
   );
 };

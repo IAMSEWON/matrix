@@ -3,7 +3,7 @@ import { Pressable, View } from 'react-native';
 
 import { cn } from '@/utils/tailwind.ts';
 
-type HeaderRightIconsProps = {
+type HeaderIconProps = {
   headerClassName?: string;
   icons?: {
     name: string;
@@ -12,7 +12,7 @@ type HeaderRightIconsProps = {
   }[];
 };
 
-const HeaderRightIcons = ({ icons, headerClassName }: HeaderRightIconsProps) => {
+const HeaderIcon = ({ icons, headerClassName }: HeaderIconProps) => {
   return (
     <View className={cn('flex-row gap-3', headerClassName)}>
       {icons?.map(({ name, icon, onPress }) => (
@@ -24,4 +24,4 @@ const HeaderRightIcons = ({ icons, headerClassName }: HeaderRightIconsProps) => 
   );
 };
 
-export default HeaderRightIcons;
+export default HeaderIcon;

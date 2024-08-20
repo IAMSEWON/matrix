@@ -1,5 +1,6 @@
 import React from 'react';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { useColorScheme } from 'nativewind';
 
 type AnimatedBorderProps = {
   children: React.ReactNode;
@@ -9,6 +10,8 @@ type AnimatedBorderProps = {
 
 const AnimatedBorder = ({ children, value, error }: AnimatedBorderProps) => {
   const borderColor = useSharedValue('transparent');
+
+  const { colorScheme } = useColorScheme();
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
@@ -34,7 +37,7 @@ const AnimatedBorder = ({ children, value, error }: AnimatedBorderProps) => {
           alignSelf: 'center',
           overflow: 'hidden',
           borderWidth: 2,
-          backgroundColor: '#f1f3f5',
+          backgroundColor: colorScheme === 'light' ? '#f1f3f5' : '#272A2E',
         },
         animatedStyle,
       ]}

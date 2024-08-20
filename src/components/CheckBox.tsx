@@ -5,13 +5,13 @@ import { Check } from 'lucide-react-native';
 
 import { getContrastYIQ } from '@/utils/color.ts';
 
-interface CheckboxProps {
+interface CheckBoxProps {
   onPress: () => void;
   checked: boolean;
   backgroundColor?: string;
 }
 
-const Checkbox: React.FC<CheckboxProps> = ({ backgroundColor = '#f1f3f5', onPress, checked }) => {
+const CheckBox: React.FC<CheckBoxProps> = ({ backgroundColor = '#f1f3f5', onPress, checked }) => {
   const scale = useSharedValue(1);
   const animatedBackgroundColor = useSharedValue(backgroundColor);
 
@@ -49,5 +49,4 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
 });
-
-export default Checkbox;
+export default CheckBox;

@@ -21,7 +21,7 @@ type DropDownProps = {
 
 const Dropdown = ({ options, control, name, label, placeholder, errors, errorMessage, rules }: DropDownProps) => {
   return (
-    <View className="flex-col" style={{ gap: 8 }}>
+    <View className="flex-col" style={{ gap: 8, height: 102 }}>
       <Label label={label} />
       <Controller
         control={control}

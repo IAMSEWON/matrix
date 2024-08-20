@@ -37,7 +37,7 @@ const DatePickerButton = ({
   const sheetRef = React.useRef<BottomSheetModal>(null);
 
   return (
-    <View className="flex-col" style={{ gap: 8 }}>
+    <View className="flex-col" style={{ gap: 8, height: 104 }}>
       <Label label={label} />
 
       <Controller

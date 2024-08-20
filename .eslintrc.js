@@ -18,7 +18,7 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 2020,
     sourceType: 'module',
-    project: './tsconfig.json',
+    project: 'tsconfig.json',
   },
   rules: {
     'react/react-in-jsx-scope': 'off',
@@ -30,9 +30,11 @@ module.exports = {
         unnamedComponents: 'arrow-function',
       },
     ],
+    'react/no-unstable-nested-components': 'off', // nested component 허용
     'no-var': 'error', // var 금지
     '@typescript-eslint/no-use-before-define': 'off', // 선언 전 사용 허용
     'import/extensions': 'off', // import 시 확장자명 제거
+    'consistent-return': 'off', // return 값이 일정하지 않아도 허용
     'react/jsx-props-no-spreading': 'off', // props spreading 허용
     'react/require-default-props': 'off', // default props 필수 제거
     'prettier/prettier': 'error', // Prettier 규칙 위반을 ESLint 오류로 처리합니다.

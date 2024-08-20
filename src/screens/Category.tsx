@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, Pressable } from 'react-native';
+import { Alert, Pressable, Text, View } from 'react-native';
 import ContextMenu from 'react-native-context-menu-view';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { FlashList } from '@shopify/flash-list';
 import { Plus, Settings } from 'lucide-react-native';
 
 import CategoryForm from '@/components/CategoryForm.tsx';
-import HeaderRightIcons from '@/components/Layout/HeaderRightIcons.tsx';
+import HeaderRightIcons from '@/components/Layout/HeaderIcon.tsx';
 import Layout from '@/components/Layout/Layout.tsx';
-import Text from '@/components/Text.tsx';
 import useMatrixStore from '@/stores/matrix.ts';
 import { MatrixType } from '@/types/matrix.ts';
 import { HomeStackParamList } from '@/types/navigation.ts';
@@ -29,7 +28,7 @@ const CategoryItem = ({
 }) => {
   return (
     <ContextMenu
-      className="mx-2"
+      className="mx-2 shadow"
       actions={[{ title: '수정' }, { title: '삭제' }]}
       onPress={(e) => {
         const title = e.nativeEvent.name;
@@ -80,7 +79,7 @@ const Category = ({ navigation }: { navigation: CategoryNavigationProp }) => {
     setIsCategoryForm(true);
   };
   // 임시 eslint 처리 후 제거 예정
-  /* eslint-disable react/no-unstable-nested-components */
+
   useEffect(() => {
     navigation.setOptions({
       headerRight: () => (
@@ -104,21 +103,23 @@ const Category = ({ navigation }: { navigation: CategoryNavigationProp }) => {
 
   return (
     <Layout>
-      <FlashList
-        data={matrixs}
-        contentInsetAdjustmentBehavior="automatic"
-        keyExtractor={(item) => `${item.id}-${item.category}`}
-        renderItem={({ item }) => (
-          <CategoryItem
-            item={item}
-            selectId={matrix?.id}
-            onSelect={onSelectMatrix}
-            onModify={onModifyMatrix}
-            onDelete={deleteMatrix}
-          />
-        )}
-        estimatedItemSize={20}
-      />
+      <View className="flex-1">
+        <FlashList
+          data={matrixs}
+          contentInsetAdjustmentBehavior="automatic"
+          keyExtractor={(item) => `${item.id}-${item.category}`}
+          renderItem={({ item }) => (
+            <CategoryItem
+              item={item}
+              selectId={matrix?.id}
+              onSelect={onSelectMatrix}
+              onModify={onModifyMatrix}
+              onDelete={deleteMatrix}
+            />
+          )}
+          estimatedItemSize={20}
+        />
+      </View>
 
       <CategoryForm
         updateId={updateCategoryId}

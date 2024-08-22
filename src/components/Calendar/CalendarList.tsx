@@ -1,30 +1,27 @@
 import React from 'react';
 import { Dimensions, FlatList, Text, TouchableOpacity, View, ViewToken } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import dayjs from 'dayjs';
 import findIndex from 'lodash/findIndex';
+import { SquareChevronLeft, SquareChevronRight } from 'lucide-react-native';
 
+import { CalendarType } from '@/constants';
 import { sameMonth } from '@/utils/date';
 
-// import { CalendarType } from '@/constants';
 import CalendarItem from './CalendarItem';
 
 interface IProps {
   currentDate: Date;
   setCurrentDate: React.Dispatch<React.SetStateAction<Date>>;
-  // calendarType: CalendarType;
-  // setCalendarType: React.Dispatch<React.SetStateAction<CalendarType>>;
+  calendarType: CalendarType;
+  setCalendarType: React.Dispatch<React.SetStateAction<CalendarType>>;
 }
 
 const CALENDAR_WIDTH = Dimensions.get('screen').width - 16;
 const PAST_SCROLL_RANGE = 50;
 const FUTURE_SCROLL_RANGE = 50;
 let onViewableItemsChangedTimeOut: NodeJS.Timeout | null = null;
-const CalendarList = ({
-  currentDate,
-  setCurrentDate,
-  // calendarType,
-  // setCalendarType
-}: IProps) => {
+const CalendarList = ({ currentDate, setCurrentDate, calendarType, setCalendarType }: IProps) => {
   const initialDate = React.useRef(dayjs(currentDate));
   const visibleMonth = React.useRef(dayjs(currentDate));
 
@@ -77,9 +74,17 @@ const CalendarList = ({
 
   const renderItem = React.useCallback(
     (props: { item: string }) => {
-      return <CalendarItem date={props.item} currentDate={currentDate} onPressDay={onPressDay} />;
+      return (
+        <CalendarItem
+          date={props.item}
+          currentDate={currentDate}
+          onPressDay={onPressDay}
+          calendarType={calendarType}
+          setCalendarType={setCalendarType}
+        />
+      );
     },
-    [currentDate],
+    [currentDate, calendarType],
   );
   const items: string[] = React.useMemo(() => {
     const months = [];
@@ -119,20 +124,37 @@ const CalendarList = ({
     },
   ]);
 
+  const SCREEN_WIDTH = Dimensions.get('screen').width - 16;
+  const dayItemHeight = ((SCREEN_WIDTH / 7) * 3) / 5;
+  React.useEffect(() => {
+    if (calendarType === 'month') {
+      calendarViewHeight.value = withTiming(dayItemHeight * 7, { duration: 100 });
+    } else {
+      calendarViewHeight.value = withTiming(dayItemHeight * 2, { duration: 100 });
+    }
+  }, [calendarType]);
+  const calendarViewHeight = useSharedValue(dayItemHeight * 7);
+
+  const calendarViewAnimatedStyle = useAnimatedStyle(() => ({
+    height: calendarViewHeight.value,
+  }));
+
   return (
     <View className="w-full">
-      <View className="flex-row items-center">
+      <View className="flex-row items-center justify-between">
         <View>
-          <Text>{dayjs(currentDate).format('YYYY년 M월')}</Text>
+          <Text className="text-lg font-bold">{dayjs(currentDate).format('YYYY년 M월')}</Text>
         </View>
-        <TouchableOpacity onPress={changePrevMonth}>
-          <Text>이전달</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={changeNextMonth}>
-          <Text>다음달</Text>
-        </TouchableOpacity>
+        <View className="flex-row gap-2">
+          <TouchableOpacity onPress={changePrevMonth}>
+            <SquareChevronLeft color="#000" size={30} style={{}} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={changeNextMonth}>
+            <SquareChevronRight color="#000" size={30} style={{}} />
+          </TouchableOpacity>
+        </View>
       </View>
-      <FlatList
+      <Animated.FlatList
         ref={calendarListRef}
         horizontal
         pagingEnabled
@@ -145,7 +167,8 @@ const CalendarList = ({
         getItemLayout={getItemLayout}
         maxToRenderPerBatch={3}
         windowSize={11}
-        // showsHorizontalScrollIndicator={false}
+        showsHorizontalScrollIndicator={false}
+        style={[{ marginTop: 5 }, calendarViewAnimatedStyle]}
       />
     </View>
   );

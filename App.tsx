@@ -57,6 +57,7 @@ const App = (): React.JSX.Element => {
             },
           })}
         >
+          <Tab.Screen name="CalendarStack" component={CalendarStack} />
           <Tab.Screen name="HomeStack" component={HomeStack} />
           <Tab.Screen
             name="Post"
@@ -69,7 +70,6 @@ const App = (): React.JSX.Element => {
           >
             {() => null}
           </Tab.Screen>
-          <Tab.Screen name="CalendarStack" component={CalendarStack} />
         </Tab.Navigator>
       </NavigationContainer>
     </Providers>

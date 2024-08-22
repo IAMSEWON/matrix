@@ -1,8 +1,10 @@
 import React from 'react';
 import { Dimensions, View } from 'react-native';
+import { Directions, Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import dayjs from 'dayjs';
 
-import { IDayItem } from '@/constants';
+import { CalendarType, IDayItem } from '@/constants';
 import { cn } from '@/utils/tailwind';
 
 import CalendarWeekRow from './CalendarWeekRow';
@@ -12,10 +14,13 @@ interface IProps {
   date: string;
   currentDate: Date;
   onPressDay: (date: Date) => void;
+  calendarType: CalendarType;
+  setCalendarType: React.Dispatch<React.SetStateAction<CalendarType>>;
 }
 
 const SCREEN_WIDTH = Dimensions.get('screen').width - 16;
-const CalendarItem = ({ date, currentDate, onPressDay }: IProps) => {
+const CalendarItem = ({ date, currentDate, onPressDay, calendarType, setCalendarType }: IProps) => {
+  console.log(calendarType);
   const thisMonth = dayjs(date).clone();
   // 주별 아이템 리스트
   const initDates = React.useMemo(() => {
@@ -62,31 +67,61 @@ const CalendarItem = ({ date, currentDate, onPressDay }: IProps) => {
     }
   }, []);
 
+  const dayItemHeight = ((SCREEN_WIDTH / 7) * 3) / 5;
+  const startTranslateY = useSharedValue(0);
+  const weekViewHeight = useSharedValue(dayItemHeight);
+  const fling = Gesture.Fling()
+    .direction(Directions.UP)
+    .direction(Directions.DOWN)
+    .onBegin((event) => {
+      startTranslateY.value = event.y;
+    })
+    .onStart((event) => {
+      if (startTranslateY.value < event.y) {
+        setCalendarType('month');
+        weekViewHeight.value = withTiming(dayItemHeight, { duration: 100 });
+      } else {
+        setCalendarType('week');
+        weekViewHeight.value = withTiming(0, { duration: 100 });
+      }
+    })
+    .runOnJS(true);
+  const weekViewAnimatedStyle = useAnimatedStyle(() => ({
+    height: weekViewHeight.value,
+  }));
+
   return (
-    <View className={cn(`items-center`)} style={{ width: SCREEN_WIDTH }}>
-      <View className="flex-row">
-        <CalendarWeekRow />
-      </View>
-      <View>
-        {initDates.map((w, _w) => {
-          return (
-            <View key={`${date}-${_w + 1}week`} className={cn(`flex-row`)}>
-              {w.map((d) => {
-                return (
-                  <Day
-                    key={`${date}-${_w + 1}week_${d.date}`}
-                    date={date}
-                    item={d}
-                    onPress={onPressDayItem}
-                    currentDate={currentDate}
-                  />
-                );
-              })}
-            </View>
-          );
-        })}
-      </View>
-    </View>
+    <GestureDetector gesture={fling}>
+      <Animated.View className={cn(`items-center`)} style={[{ width: SCREEN_WIDTH }]}>
+        <View className="flex-row">
+          <CalendarWeekRow />
+        </View>
+        <View>
+          {initDates.map((w, _w) => {
+            const isCurrentWeek = w.find((i) => i.type === 'this' && i.date === dayjs(currentDate).date());
+            return (
+              <Animated.View
+                key={`${date}-${_w + 1}week`}
+                className={cn(`flex-row overflow-hidden`)}
+                style={isCurrentWeek === undefined ? weekViewAnimatedStyle : {}}
+              >
+                {w.map((d) => {
+                  return (
+                    <Day
+                      key={`${date}-${_w + 1}week_${d.date}`}
+                      date={date}
+                      item={d}
+                      onPress={onPressDayItem}
+                      currentDate={currentDate}
+                    />
+                  );
+                })}
+              </Animated.View>
+            );
+          })}
+        </View>
+      </Animated.View>
+    </GestureDetector>
   );
 };
 
@@ -95,6 +130,7 @@ export default React.memo(CalendarItem, (prevProps, nextProps) => {
   const prevNextMonthDiff = Math.round(
     dayjs(prevProps.date).set('date', 1).diff(dayjs(nextProps.currentDate).set('date', 1), 'month', true),
   );
+  // if (prevProps.calendarType !== nextProps.calendarType) return false;
   // 과거로 변경된 경우
   if (prevProps.currentDate > nextProps.currentDate) {
     return prevNextMonthDiff !== 1 && prevNextMonthDiff !== 0;

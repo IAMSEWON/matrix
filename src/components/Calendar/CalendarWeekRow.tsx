@@ -9,7 +9,15 @@ const CalendarWeekRow = () => {
     <>
       {DAYS.map((d) => {
         return (
-          <View key={d} style={{ width: SCREEN_WIDTH / 7, alignItems: 'center', paddingVertical: 6 }}>
+          <View
+            key={d}
+            style={{
+              width: SCREEN_WIDTH / 7,
+              alignItems: 'center',
+              paddingVertical: 6,
+              height: ((SCREEN_WIDTH / 7) * 3) / 5,
+            }}
+          >
             <Text className="text-[#777]">{d}</Text>
           </View>
         );

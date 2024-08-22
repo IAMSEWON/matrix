@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dimensions, Text, TouchableOpacity } from 'react-native';
+import { Dimensions, Text, TouchableWithoutFeedback, View } from 'react-native';
 import dayjs from 'dayjs';
 
 import { IDayItem } from '@/constants';
@@ -35,17 +35,18 @@ const Day = ({ item, date, onPress, currentDate }: IProps) => {
     dateTextColor = '#fff';
   }
   return (
-    <TouchableOpacity
-      onPress={() => onPress(item)}
-      className="items-center justify-center rounded-[4px]"
-      style={{
-        width: SCREEN_WIDTH / 7,
-        height: ((SCREEN_WIDTH / 7) * 3) / 5,
-        backgroundColor: dateBgColor,
-      }}
-    >
-      <Text style={{ color: dateTextColor }}>{item.date}</Text>
-    </TouchableOpacity>
+    <TouchableWithoutFeedback onPress={() => onPress(item)}>
+      <View
+        className="items-center justify-center rounded-[4px]"
+        style={{
+          width: SCREEN_WIDTH / 7,
+          height: ((SCREEN_WIDTH / 7) * 3) / 5,
+          backgroundColor: dateBgColor,
+        }}
+      >
+        <Text style={{ color: dateTextColor }}>{item.date}</Text>
+      </View>
+    </TouchableWithoutFeedback>
   );
 };
 export default React.memo(Day, (prevProps, nextProps) => {

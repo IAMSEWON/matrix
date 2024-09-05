@@ -1,9 +1,15 @@
 import { MatrixType } from '@/types/matrix.ts';
 
-export type RootStackParamList = {
+export type TabStackParamList = {
   HomeStack: undefined;
   MatrixAdd: undefined;
   CalendarStack: undefined;
+};
+export type RootStackParamList = {
+  Guide: undefined;
+  Main: undefined;
+  CategoryAdd: undefined;
+  MatrixAdd: undefined;
 };
 export type HomeStackParamList = {
   Home: undefined;

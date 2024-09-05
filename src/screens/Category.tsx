@@ -126,6 +126,7 @@ const Category = ({ navigation }: { navigation: CategoryNavigationProp }) => {
         matrixs={matrixs}
         open={isCategoryForm}
         onClose={() => setIsCategoryForm(false)}
+        modal
       />
     </Layout>
   );

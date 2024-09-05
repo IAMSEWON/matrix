@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Control, Controller, FieldError, RegisterOptions } from 'react-hook-form';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Keyboard, Text, TouchableOpacity, View } from 'react-native';
 import DatePicker from 'react-native-date-picker';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import dayjs from 'dayjs';
@@ -51,6 +51,7 @@ const DatePickerButton = ({
               <TouchableOpacity
                 onPress={() => {
                   sheetRef.current?.present();
+                  Keyboard.dismiss();
                 }}
                 className="flex-1 items-center justify-center"
                 style={{

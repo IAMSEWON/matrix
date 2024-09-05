@@ -11,9 +11,9 @@ export const setData = async (key: string, value: any) => {
   }
 };
 
-export const getData = async (categorys: string) => {
+export const getData = async (key: string) => {
   try {
-    const jsonValue = await AsyncStorage.getItem(categorys);
+    const jsonValue = await AsyncStorage.getItem(key);
     return jsonValue !== null ? JSON.parse(jsonValue) : null;
   } catch (e) {
     // error reading value

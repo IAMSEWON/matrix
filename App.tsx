@@ -1,68 +1,59 @@
-import React from 'react';
-import { Platform } from 'react-native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { Calendar, Home } from 'lucide-react-native';
-import { useColorScheme } from 'nativewind';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import Providers from '@/components/Providers/Providers.tsx';
-import CalendarStack from '@/navigations/CalendarStack.tsx';
-import HomeStack from '@/navigations/HomeStack.tsx';
-import MatrixAdd from '@/screens/MatrixAdd.tsx';
+import TabStack from '@/navigations/TabStack.tsx';
+import CategoryAdd from '@/screens/Root/CategoryAdd.tsx';
+import Guide from '@/screens/Root/Guide.tsx';
+import MatrixAdd from '@/screens/Root/MatrixAdd.tsx';
 import { RootStackParamList } from '@/types/navigation.ts';
+import { getData } from '@/utils/storage.ts';
 
-const Tab = createBottomTabNavigator<RootStackParamList>();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const App = (): React.JSX.Element => {
-  const { colorScheme } = useColorScheme();
+  const [initialRouteName, setInitialRouteName] = useState<keyof RootStackParamList>('Guide');
 
-  const color = colorScheme === 'light' ? '#fff' : '#1E1F23';
-  const iconColor = colorScheme === 'light' ? '#1E1F23' : '#fff';
-  const tabBorderColor = colorScheme === 'light' ? '#d9d9d9' : '#313237';
+  const onCheckGuide = async () => {
+    const guideKey = await getData('guideKey');
+
+    if (guideKey) {
+      setInitialRouteName('Main');
+    }
+  };
+
+  useEffect(() => {
+    onCheckGuide();
+  }, []);
 
   return (
     <Providers>
       <NavigationContainer>
-        <Tab.Navigator
-          screenOptions={({ route }) => ({
-            tabBarStyle: {
-              backgroundColor: color,
-              borderTopColor: tabBorderColor,
-            },
-            tabBarIconStyle: {
-              top: Platform.OS === 'android' ? 8 : 14,
-            },
-            headerShown: false,
-            tabBarLabel: '',
-            tabBarIcon: ({ size }) => {
-              let iconComponent: React.ReactNode;
-
-              if (route.name === 'HomeStack') {
-                iconComponent = <Home size={size} color={iconColor} />;
-              } else if (route.name === 'CalendarStack') {
-                iconComponent = <Calendar size={size} color={iconColor} />;
-              }
-
-              return iconComponent;
-            },
-          })}
-        >
-          <Tab.Screen name="HomeStack" component={HomeStack} />
-          <Tab.Screen
-            name="MatrixAdd"
+        <Stack.Navigator initialRouteName={initialRouteName}>
+          <Stack.Screen
+            name="Guide"
+            component={Guide}
             options={{
-              tabBarButton: () => {
-                return <MatrixAdd />;
-              },
-              tabBarIconStyle: {
-                top: Platform.OS === 'android' ? 10 : 14,
-              },
+              headerShown: false,
             }}
-          >
-            {() => null}
-          </Tab.Screen>
-          <Tab.Screen name="CalendarStack" component={CalendarStack} />
-        </Tab.Navigator>
+          />
+          <Stack.Screen
+            name="CategoryAdd"
+            component={CategoryAdd}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="MatrixAdd"
+            component={MatrixAdd}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen name="Main" component={TabStack} />
+        </Stack.Navigator>
       </NavigationContainer>
     </Providers>
   );

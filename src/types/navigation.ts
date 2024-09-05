@@ -8,8 +8,6 @@ export type TabStackParamList = {
 export type RootStackParamList = {
   Guide: undefined;
   Main: undefined;
-  CategoryAdd: undefined;
-  MatrixAdd: undefined;
 };
 export type HomeStackParamList = {
   Home: undefined;

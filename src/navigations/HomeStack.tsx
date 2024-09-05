@@ -45,11 +45,10 @@ const HomeStack = ({ navigation }: HomeStackProps) => {
         },
         headerTintColor: iconColor,
         // 임시 경고 처리
-
         headerLeft: (props: HeaderBackButtonProps) => {
           const { canGoBack } = props;
 
-          if (!canGoBack) return null;
+          if (!canGoBack || navigation.getState().index === 0) return null;
 
           return (
             <HeaderIcon
@@ -69,7 +68,7 @@ const HomeStack = ({ navigation }: HomeStackProps) => {
         name="Home"
         component={Home}
         options={{
-          title: matrix?.category || '카테고리를 선택해주세요',
+          title: matrix?.category || '카테고리',
           // 임시 경고 처리
 
           headerRight: () => (

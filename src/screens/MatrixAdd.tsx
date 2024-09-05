@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Alert, Platform, Pressable, View } from 'react-native';
+import { useNavigation } from '@react-navigation/core';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import dayjs from 'dayjs';
 import { SquarePlus } from 'lucide-react-native';
 import { useColorScheme } from 'nativewind';
@@ -13,8 +15,13 @@ import Input from '@/components/Form/Input.tsx';
 import RadioGroup from '@/components/Form/RadioGroup.tsx';
 import useMatrixStore from '@/stores/matrix.ts';
 import { MatrixAddType } from '@/types/matrix.ts';
+import { HomeStackParamList } from '@/types/navigation.ts';
+
+type MatrixAddNavigationProp = NativeStackNavigationProp<HomeStackParamList, 'MatrixAdd'>;
 
 const MatrixAdd = () => {
+  const navigation = useNavigation<MatrixAddNavigationProp>();
+
   const [isVisibleMatrixAdd, setIsVisibleMatrixAdd] = useState<boolean>(false);
   const [isVisibleCategory, setIsVisibleCategory] = useState<boolean>(false);
 
@@ -42,6 +49,11 @@ const MatrixAdd = () => {
       Alert.alert('카테고리를 먼저 추가해주세요.', '', [
         { text: '취소', onPress: () => null },
         { text: '카테고리 추가', onPress: () => setIsVisibleCategory(true) },
+      ]);
+    } else if (!matrix) {
+      Alert.alert('카테고리를 선택해주세요.', '', [
+        { text: '취소', onPress: () => null },
+        { text: '카테고리 선택', onPress: () => navigation.navigate('Category') },
       ]);
     } else {
       setIsVisibleMatrixAdd(true);
@@ -77,7 +89,11 @@ const MatrixAdd = () => {
   return (
     <View>
       <Pressable
-        style={{ marginTop: Platform.OS === 'android' ? 12 : 18, marginHorizontal: 48 }}
+        style={{
+          marginTop: Platform.OS === 'android' ? 12 : 18,
+          marginHorizontal: 48,
+          alignItems: 'center',
+        }}
         onPress={onPressIconHandler}
       >
         <SquarePlus size={28} className="font-semibold" color={colorScheme === 'light' ? 'black' : 'white'} />
@@ -155,7 +171,7 @@ const MatrixAdd = () => {
           darkMode={colorScheme === 'dark'}
         />
       </Form>
-      <CategoryForm matrixs={matrixs} open={isVisibleCategory} onClose={() => setIsVisibleCategory(false)} modal />
+      <CategoryForm matrixs={matrixs} open={isVisibleCategory} onClose={() => setIsVisibleCategory(false)} />
     </View>
   );
 };

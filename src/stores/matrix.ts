@@ -22,6 +22,8 @@ const useMatrixStore = create(
       // 선택된 카테고리 매트릭스
       matrix: null,
       matrixs: [],
+      // 매트릭스를 선택하는 함수
+      selectMatrix: (id) => set((state) => ({ matrix: state.matrixs.find((matrix) => matrix.id === id) })),
       // 새로운 매트릭스를 추가하는 함수
       addMatrix: (matrix) =>
         set((state) => {
@@ -37,8 +39,6 @@ const useMatrixStore = create(
           };
           return { matrixs: [...state.matrixs, newMatrix] };
         }),
-      // 매트릭스를 선택하는 함수
-      selectMatrix: (id) => set((state) => ({ matrix: state.matrixs.find((matrix) => matrix.id === id) })),
       // 매트릭스를 업데이트하는 함수
       updateMatrix: (id, matrix) =>
         set((state) => {

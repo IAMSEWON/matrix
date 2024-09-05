@@ -4,9 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import Providers from '@/components/Providers/Providers.tsx';
 import TabStack from '@/navigations/TabStack.tsx';
-import CategoryAdd from '@/screens/Root/CategoryAdd.tsx';
-import Guide from '@/screens/Root/Guide.tsx';
-import MatrixAdd from '@/screens/Root/MatrixAdd.tsx';
+import Guide from '@/screens/Guide.tsx';
 import { RootStackParamList } from '@/types/navigation.ts';
 import { getData } from '@/utils/storage.ts';
 
@@ -39,20 +37,12 @@ const App = (): React.JSX.Element => {
             }}
           />
           <Stack.Screen
-            name="CategoryAdd"
-            component={CategoryAdd}
+            name="Main"
+            component={TabStack}
             options={{
               headerShown: false,
             }}
           />
-          <Stack.Screen
-            name="MatrixAdd"
-            component={MatrixAdd}
-            options={{
-              headerShown: false,
-            }}
-          />
-          <Stack.Screen name="Main" component={TabStack} />
         </Stack.Navigator>
       </NavigationContainer>
     </Providers>

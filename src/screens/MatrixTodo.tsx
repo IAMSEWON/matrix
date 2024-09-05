@@ -1,10 +1,11 @@
 import React from 'react';
-import { View } from 'react-native';
+import { Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import dayjs from 'dayjs';
 
-import CheckBox from '@/components/Check.tsx';
-import Text from '@/components/Text.tsx';
+import FadeInFadeOut from '@/components/Animation/FadeInOut.tsx';
+import CheckBox from '@/components/CheckBox.tsx';
+import Layout from '@/components/Layout/Layout.tsx';
 import useMatrixStore from '@/stores/matrix.ts';
 import { HomeStackParamList } from '@/types/navigation.ts';
 
@@ -21,19 +22,19 @@ const MatrixTodo = ({ route }: MatrixTodoNavigationProp) => {
   };
 
   return (
-    <View
-      className="flex-1"
-      style={{
-        backgroundColor: matrix?.categoryBackgroundColor,
-      }}
-    >
-      <View className="m-4 flex-1 rounded-2xl bg-white p-4" style={{ gap: 10 }}>
+    <Layout>
+      <View>
         {matrix?.matrixs[matrixType].contents
           .slice() // Create a shallow copy to avoid mutating the original array
           .sort((a, b) => Number(a.isChecked) - Number(b.isChecked)) // Sort by isChecked
           .map((content) => {
             return (
-              <View className="flex-row items-center justify-between" key={content.id}>
+              <FadeInFadeOut
+                fadeIn
+                style={{ flex: 0 }}
+                className="flex-row items-center justify-between"
+                key={content.id}
+              >
                 <View className="flex-row items-center" style={{ gap: 10 }}>
                   <CheckBox
                     onPress={() => onCheckTodoHandler(matrix.id, content.id)}
@@ -64,11 +65,11 @@ const MatrixTodo = ({ route }: MatrixTodoNavigationProp) => {
                     {dayjs(content.endDate).format('HH:mmA')}
                   </Text>
                 </View>
-              </View>
+              </FadeInFadeOut>
             );
           })}
       </View>
-    </View>
+    </Layout>
   );
 };
 

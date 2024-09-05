@@ -19,6 +19,7 @@ type MatrixStoreType = {
 const useMatrixStore = create(
   persist<MatrixStoreType>(
     (set) => ({
+      // 선택된 카테고리 매트릭스
       matrix: null,
       matrixs: [],
       // 새로운 매트릭스를 추가하는 함수

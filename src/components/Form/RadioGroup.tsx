@@ -16,6 +16,7 @@ type RadioGroupProps = {
   errors?: FieldError;
   errorMessage?: string;
   rules?: RegisterOptions<MatrixAddType>;
+  darkMode?: boolean;
 };
 
 const matrixData = ['doit', 'schedule', 'delegate', 'eliminate'];
@@ -64,9 +65,10 @@ const RadioGroup = ({
   errors,
   errorMessage,
   rules,
+  darkMode,
 }: RadioGroupProps) => {
   return (
-    <View className="flex-col" style={{ gap: 8 }}>
+    <View className="flex-col" style={{ gap: 8, height: 102 }}>
       <Label label={label} />
       <Controller
         control={control}
@@ -88,7 +90,12 @@ const RadioGroup = ({
                     {type === 'MATRIX' ? (
                       <MatrixItem value={option.value} />
                     ) : (
-                      <Text style={{ fontWeight: 'bold', color: value === option.value ? '#007bff' : '#000' }}>
+                      <Text
+                        style={{
+                          fontWeight: 'bold',
+                          color: darkMode ? '#fff' : '#1E1F23',
+                        }}
+                      >
                         {option.label}
                       </Text>
                     )}

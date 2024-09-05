@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Control, Controller, FieldError, RegisterOptions } from 'react-hook-form';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Keyboard, Text, TouchableOpacity, View } from 'react-native';
 import DatePicker from 'react-native-date-picker';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
 import dayjs from 'dayjs';
@@ -20,6 +20,7 @@ type DatePickerButtonProps = {
   placeholder: string;
   errorMessage?: string;
   rules?: RegisterOptions<MatrixAddType>;
+  darkMode?: boolean;
 };
 
 const DatePickerButton = ({
@@ -31,13 +32,14 @@ const DatePickerButton = ({
   errorMessage,
   placeholder,
   rules,
+  darkMode,
 }: DatePickerButtonProps) => {
   const [date, setDate] = useState<Date>(dayjs().toDate());
 
   const sheetRef = React.useRef<BottomSheetModal>(null);
 
   return (
-    <View className="flex-col" style={{ gap: 8 }}>
+    <View className="flex-col" style={{ gap: 8, height: 104 }}>
       <Label label={label} />
 
       <Controller
@@ -49,6 +51,7 @@ const DatePickerButton = ({
               <TouchableOpacity
                 onPress={() => {
                   sheetRef.current?.present();
+                  Keyboard.dismiss();
                 }}
                 className="flex-1 items-center justify-center"
                 style={{
@@ -56,7 +59,7 @@ const DatePickerButton = ({
                   paddingVertical: 12,
                 }}
               >
-                <Text style={{ fontWeight: 'bold', color: value ? '#007bff' : '#CBCBCD' }}>
+                <Text style={{ fontWeight: 'bold', color: darkMode ? '#fff' : '#1E1F23' }}>
                   {(value && dayjs(value).format('YYYY년 MM월 DD일 hh시 mm분')) || placeholder}
                 </Text>
               </TouchableOpacity>
@@ -75,7 +78,9 @@ const DatePickerButton = ({
                 <DatePicker
                   style={{
                     flex: 1,
+                    marginLeft: 14,
                   }}
+                  theme={darkMode ? 'dark' : 'light'}
                   locale="ko"
                   date={date}
                   minimumDate={new Date()}

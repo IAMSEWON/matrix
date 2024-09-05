@@ -1,7 +1,6 @@
 import React from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
-import Text from '@/components/Text.tsx';
 import { TodoType } from '@/types/matrix.ts';
 import { cn } from '@/utils/tailwind.ts';
 
@@ -21,7 +20,7 @@ type MatrixLayoutProps = {
 const MatrixLayout = (props: MatrixLayoutProps) => {
   const { doit, schedule, delegate, eliminate } = props;
 
-  const textStyle = 'text-base font-bold';
+  const textStyle = 'text-base font-bold text-black dark:text-white';
 
   const defaultMatrixBackgroundColor = '#d9d9d9';
 

@@ -16,6 +16,7 @@ type InputProps = {
   errors?: FieldError;
   errorMessage?: string;
   rules?: RegisterOptions<MatrixAddType>;
+  darkMode?: boolean;
 } & TextInputProps;
 
 const Input = ({
@@ -27,10 +28,11 @@ const Input = ({
   errors,
   errorMessage,
   rules,
+  darkMode,
   ...props
 }: InputProps) => {
   return (
-    <View className="flex-col" style={{ gap: 8 }}>
+    <View className="flex-col" style={{ gap: 8, height: 102 }}>
       <Label label={label} />
       <Controller
         control={control}
@@ -45,7 +47,11 @@ const Input = ({
                 onBlur={onBlur}
                 ref={ref}
                 returnKeyType={returnKeyType}
-                className={cn('h-12 rounded px-2 py-3', props.className)}
+                placeholderTextColor={darkMode ? '#CBCBCD' : '#7A7A7A'}
+                style={{
+                  color: darkMode ? '#fff' : '#1E1F23',
+                }}
+                className={cn('rounded px-2 py-3', props.className)}
                 {...props}
               />
             </AnimatedBorder>

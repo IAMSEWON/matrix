@@ -12,7 +12,7 @@ type LabelProps = {
 const Label = ({ label, required, className }: LabelProps) => {
   return (
     <View className="flex-row gap-1">
-      <Text className={cn('text-lg font-semibold', className)}>{label}</Text>
+      <Text className={cn('text-lg font-semibold dark:text-white', className)}>{label}</Text>
       {required && <Text className="text-red-500">*</Text>}
     </View>
   );

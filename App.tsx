@@ -1,76 +1,59 @@
-import React from 'react';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { Calendar, Home, SquarePlus } from 'lucide-react-native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import Providers from '@/components/Providers.tsx';
-import CalendarStack from '@/navigations/CalendarStack.tsx';
-import HomeStack from '@/navigations/HomeStack.tsx';
-import useMatrixStore from '@/stores/matrix.ts';
+import Providers from '@/components/Providers/Providers.tsx';
+import TabStack from '@/navigations/TabStack.tsx';
+import CategoryAdd from '@/screens/Root/CategoryAdd.tsx';
+import Guide from '@/screens/Root/Guide.tsx';
+import MatrixAdd from '@/screens/Root/MatrixAdd.tsx';
 import { RootStackParamList } from '@/types/navigation.ts';
-import { getContrastYIQ } from '@/utils/color.ts';
+import { getData } from '@/utils/storage.ts';
 
-const Tab = createBottomTabNavigator<RootStackParamList>();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const App = (): React.JSX.Element => {
-  const { matrix } = useMatrixStore();
+  const [initialRouteName, setInitialRouteName] = useState<keyof RootStackParamList>('Guide');
+
+  const onCheckGuide = async () => {
+    const guideKey = await getData('guideKey');
+
+    if (guideKey) {
+      setInitialRouteName('Main');
+    }
+  };
+
+  useEffect(() => {
+    onCheckGuide();
+  }, []);
 
   return (
     <Providers>
       <NavigationContainer>
-        <Tab.Navigator
-          screenOptions={({ route }) => ({
-            tabBarStyle: {
-              backgroundColor: matrix?.categoryBackgroundColor,
-            },
-            tabBarIconStyle: {
-              top: 14,
-            },
-            headerShown: false,
-            tabBarLabel: '',
-            tabBarIcon: ({ size }) => {
-              let iconComponent: React.ReactNode;
-
-              if (route.name === 'HomeStack') {
-                iconComponent = (
-                  <Home size={size} className="font-semibold" color={getContrastYIQ(matrix?.categoryBackgroundColor)} />
-                );
-              } else if (route.name === 'Post') {
-                iconComponent = (
-                  <SquarePlus
-                    size={28}
-                    className="font-semibold"
-                    color={getContrastYIQ(matrix?.categoryBackgroundColor)}
-                  />
-                );
-              } else if (route.name === 'CalendarStack') {
-                iconComponent = (
-                  <Calendar
-                    size={size}
-                    className="font-semibold"
-                    color={getContrastYIQ(matrix?.categoryBackgroundColor)}
-                  />
-                );
-              }
-
-              return iconComponent;
-            },
-          })}
-        >
-          <Tab.Screen name="CalendarStack" component={CalendarStack} />
-          <Tab.Screen name="HomeStack" component={HomeStack} />
-          <Tab.Screen
-            name="Post"
-            listeners={({ navigation }) => ({
-              tabPress: (e) => {
-                e.preventDefault();
-                navigation.navigate('MatrixAdd');
-              },
-            })}
-          >
-            {() => null}
-          </Tab.Screen>
-        </Tab.Navigator>
+        <Stack.Navigator initialRouteName={initialRouteName}>
+          <Stack.Screen
+            name="Guide"
+            component={Guide}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="CategoryAdd"
+            component={CategoryAdd}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen
+            name="MatrixAdd"
+            component={MatrixAdd}
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen name="Main" component={TabStack} />
+        </Stack.Navigator>
       </NavigationContainer>
     </Providers>
   );

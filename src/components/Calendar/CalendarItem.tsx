@@ -146,7 +146,6 @@ const CalendarItem = ({ date, currentDate, onPressDay, calendarType, setCalendar
                     return (
                       <Day
                         key={`${date}-${_w + 1}week_${d.date}`}
-                        date={date}
                         item={d}
                         onPress={onPressDayItem}
                         currentDate={currentDate}
@@ -164,7 +163,6 @@ const CalendarItem = ({ date, currentDate, onPressDay, calendarType, setCalendar
               return (
                 <Day
                   key={`${date}-${_w + 1}week_${w.date}`}
-                  date={date}
                   item={w}
                   onPress={onPressDayItem}
                   currentDate={currentDate}

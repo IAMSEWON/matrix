@@ -20,6 +20,7 @@ const TabStack = () => {
 
   return (
     <Tab.Navigator
+      initialRouteName="CalendarStack"
       screenOptions={({ route }) => ({
         tabBarStyle: {
           backgroundColor: color,

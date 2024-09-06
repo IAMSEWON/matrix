@@ -13,7 +13,7 @@ import { getData } from '@/utils/storage.ts';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const App = (): React.JSX.Element => {
-  const [initialRouteName, setInitialRouteName] = useState<keyof RootStackParamList>('Guide');
+  const [initialRouteName, setInitialRouteName] = useState<keyof RootStackParamList>('Main');
 
   const onCheckGuide = async () => {
     const guideKey = await getData('guideKey');

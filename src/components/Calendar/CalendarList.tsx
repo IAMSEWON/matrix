@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dimensions, FlatList, Text, TouchableOpacity, View, ViewToken } from 'react-native';
+import { ActivityIndicator, Dimensions, FlatList, Text, TouchableOpacity, View, ViewToken } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import dayjs from 'dayjs';
 import findIndex from 'lodash/findIndex';
@@ -18,15 +18,19 @@ interface IProps {
 }
 
 const CALENDAR_WIDTH = Dimensions.get('screen').width - 16;
-const PAST_SCROLL_RANGE = 50;
-const FUTURE_SCROLL_RANGE = 50;
+// const PAST_SCROLL_RANGE = 50;
+const PAST_SCROLL_RANGE = 10;
+// const FUTURE_SCROLL_RANGE = 50;
+const FUTURE_SCROLL_RANGE = 10;
 let onViewableItemsChangedTimeOut: NodeJS.Timeout | null = null;
 let visibleDateTypeChangedTimeOut: NodeJS.Timeout | null = null;
 const CalendarList = ({ currentDate, setCurrentDate, calendarType, setCalendarType }: IProps) => {
-  const [initialDate] = React.useState(dayjs(currentDate));
-  // const initialDate = React.useRef(dayjs(currentDate));
+  // const [initialDate, setInitialDate] = React.useState(dayjs(currentDate));
+  const initialDate = React.useRef(dayjs(currentDate));
   const visibleDate = React.useRef(dayjs(currentDate));
   const visibleDateType = React.useRef('month');
+  const [refreshing] = React.useState<boolean>(false);
+  const [ITEM, setItem] = React.useState<string[]>([]);
 
   const onPressDay = React.useCallback(
     (date: Date) => {
@@ -108,22 +112,14 @@ const CalendarList = ({ currentDate, setCurrentDate, calendarType, setCalendarTy
 
   const scrollToCurrent = React.useCallback(
     (date: Date = currentDate) => {
-      // console.log('date', dayjs(date).format('YYYYMMDD'));
-      const currentD = calendarType === 'month' ? 1 : dayjs(initialDate).startOf('week').date();
+      const currentD = calendarType === 'month' ? 1 : dayjs(initialDate.current).startOf('week').date();
       const scrollD = calendarType === 'month' ? 1 : dayjs(date).startOf('week').date();
-      const currentScroll = dayjs(initialDate).clone().date(currentD);
+      const currentScroll = dayjs(initialDate.current).clone().date(currentD);
       const scrollTo =
         calendarType === 'month' ? dayjs(date).clone().date(scrollD) : dayjs(date).clone().startOf('week');
       const diffMonth = Math.round(scrollTo.diff(currentScroll, 'month', true));
       const diffWeek = Math.round(scrollTo.diff(currentScroll, 'week', true));
       const scrollAmount = CALENDAR_WIDTH * (PAST_SCROLL_RANGE + (calendarType === 'month' ? diffMonth : diffWeek));
-      // console.log('currentD', currentD);
-      // console.log('scrollD', scrollD);
-      // console.log('currentScroll', currentScroll);
-      // console.log('scrollTo', scrollTo);
-      // console.log('diffMonth', diffMonth);
-      // console.log('diffWeek', diffWeek);
-      // console.log('scrollAmount', scrollAmount);
       if (scrollAmount !== 0) {
         visibleDate.current = scrollTo;
         calendarListRef?.current?.scrollToOffset({
@@ -146,10 +142,50 @@ const CalendarList = ({ currentDate, setCurrentDate, calendarType, setCalendarTy
   //   const diffWeek = Math.round(scrollTo.diff(currentScroll, 'week', true));
   //   const targetDiff = calendarType === 'month' ? diffMonth : diffWeek;
   //   console.log('targetDiff', targetDiff);
-  //   if (Math.abs(targetDiff) === 10) {
+  //   if (targetDiff <= PAST_SCROLL_RANGE || targetDiff >= FUTURE_SCROLL_RANGE) {
   //     setInitialDate(dayjs(currentDate));
   //   }
   // }, [currentDate]);
+
+  const initItems = () => {
+    const lists = [];
+    for (let i = 0; i <= PAST_SCROLL_RANGE + FUTURE_SCROLL_RANGE; i++) {
+      const rangeDate = initialDate.current.clone().add(i - PAST_SCROLL_RANGE, calendarType);
+      lists.push(rangeDate.format('YYYY-MM-DD'));
+    }
+    setItem(lists);
+  };
+
+  const loadMoreItem = (direction: 'prev' | 'next') => {
+    // console.log('loadMoreItem()', direction);
+    let lists = [...ITEM];
+    const arr = [];
+    // console.log('lists 11', lists);
+    if (direction === 'prev') {
+      lists = lists.slice(0, PAST_SCROLL_RANGE - 1);
+      initialDate.current = dayjs(lists[0]);
+      for (let i = 0; i <= PAST_SCROLL_RANGE; i++) {
+        const rangeDate = dayjs(lists[0])
+          .clone()
+          .add(i - 1 - PAST_SCROLL_RANGE, calendarType);
+        arr.push(rangeDate.format('YYYY-MM-DD'));
+      }
+      lists = [...arr, ...lists];
+    } else {
+      lists = lists.slice(-(FUTURE_SCROLL_RANGE + 1));
+      initialDate.current = dayjs(lists[lists.length - 1]);
+      for (let i = 0; i <= FUTURE_SCROLL_RANGE; i++) {
+        const rangeDate = dayjs(lists[lists.length - 1])
+          .clone()
+          .add(i + 1, calendarType)
+          .format('YYYY-MM-DD');
+        arr.push(rangeDate);
+      }
+      lists = [...lists, ...arr];
+    }
+    // console.log('lists 22', lists);
+    setItem(lists);
+  };
 
   const renderItem = React.useCallback(
     (props: { item: string }) => {
@@ -165,20 +201,26 @@ const CalendarList = ({ currentDate, setCurrentDate, calendarType, setCalendarTy
     },
     [calendarType, currentDate],
   );
-  const items: string[] = React.useMemo(() => {
-    const lists = [];
-    for (let i = 0; i <= PAST_SCROLL_RANGE + FUTURE_SCROLL_RANGE; i++) {
-      const rangeDate = initialDate.clone().add(i - PAST_SCROLL_RANGE, calendarType);
-      lists.push(rangeDate.format('YYYY-MM-DD'));
-    }
-    return lists;
-  }, [PAST_SCROLL_RANGE, FUTURE_SCROLL_RANGE, calendarType, initialDate]);
+
+  React.useEffect(() => {
+    initItems();
+  }, [calendarType]);
+
+  // const items: string[] = React.useMemo(() => {
+  //   const lists = [];
+  //   for (let i = 0; i <= PAST_SCROLL_RANGE + FUTURE_SCROLL_RANGE; i++) {
+  //     const rangeDate = initialDate.current.clone().add(i - PAST_SCROLL_RANGE, calendarType);
+  //     lists.push(rangeDate.format('YYYY-MM-DD'));
+  //   }
+  //   return lists;
+  //   // }, [PAST_SCROLL_RANGE, FUTURE_SCROLL_RANGE, calendarType, initialDate]);
+  // }, [PAST_SCROLL_RANGE, FUTURE_SCROLL_RANGE, calendarType]);
 
   // React.useEffect(() => {
-  //   // console.log('React.useEffect items', items);
-  //   // console.log('React.useEffect currentDate', currentDate);
+  //   console.log('React.useEffect items', items);
+  //   console.log('React.useEffect currentDate', currentDate);
   //   // const scrollAmount = CALENDAR_WIDTH * PAST_SCROLL_RANGE + 1;
-  //   const scrollAmount = CALENDAR_WIDTH * 41;
+  //   const scrollAmount = CALENDAR_WIDTH * PAST_SCROLL_RANGE;
   //   calendarListRef?.current?.scrollToOffset({
   //     offset: scrollAmount,
   //     animated: false,
@@ -186,10 +228,11 @@ const CalendarList = ({ currentDate, setCurrentDate, calendarType, setCalendarTy
   // }, [items]);
 
   const initialDateIndex = React.useMemo(() => {
-    return findIndex(items, function (item) {
+    return findIndex(ITEM, function (item) {
       return item.toString() === dayjs(currentDate).clone().format('YYYY-MM-DD');
     });
-  }, [items]);
+  }, [ITEM, currentDate]);
+  // console.log('initialDateIndex', initialDateIndex);
 
   const calendarListRef = React.useRef<FlatList>(null);
 
@@ -239,11 +282,11 @@ const CalendarList = ({ currentDate, setCurrentDate, calendarType, setCalendarTy
         ref={calendarListRef}
         horizontal
         pagingEnabled
-        data={items}
+        data={ITEM}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
         initialNumToRender={1}
-        initialScrollIndex={initialDateIndex}
+        initialScrollIndex={Math.max(initialDateIndex, 0)}
         viewabilityConfig={{
           viewAreaCoveragePercentThreshold: 20,
         }}
@@ -252,6 +295,38 @@ const CalendarList = ({ currentDate, setCurrentDate, calendarType, setCalendarTy
         maxToRenderPerBatch={3}
         windowSize={11}
         showsHorizontalScrollIndicator={false}
+        onEndReached={() => {
+          loadMoreItem('next');
+        }}
+        onEndReachedThreshold={0.5}
+        onStartReached={() => {
+          loadMoreItem('prev');
+        }}
+        onStartReachedThreshold={0.5}
+        ListFooterComponent={
+          !refreshing ? (
+            <View className="flex-1 justify-center">
+              <ActivityIndicator />
+            </View>
+          ) : null
+        }
+        ListHeaderComponent={
+          refreshing ? (
+            <View className="flex-1 justify-center">
+              <ActivityIndicator />
+            </View>
+          ) : null
+        }
+        // refreshControl={
+        //   <RefreshControl
+        //     refreshing={refreshing}
+        //     onRefresh={() => {
+        //       console.log('onRefresh 222');
+        //       loadMoreItem();
+        //     }}
+        //     progressViewOffset={60}
+        //   />
+        // }
         style={[{ marginTop: 5 }, calendarViewAnimatedStyle]}
       />
     </View>

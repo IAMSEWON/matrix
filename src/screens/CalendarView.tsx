@@ -1,19 +1,61 @@
 import React from 'react';
 import { Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import dayjs from 'dayjs';
 
 import CalendarList from '@/components/Calendar/CalendarList';
 import Layout from '@/components/Layout/Layout.tsx';
 import { CalendarType } from '@/constants';
 
-// 월/주별 토글 기능
-// 현재일자 기준 앞,뒤 50개월 추가된 상태에서 첫번째 또는 마지막 월로 변경 시 날짜 기간 추가
 const CalendarView = () => {
+  const PAST_SCROLL_RANGE = 50;
+  const FUTURE_SCROLL_RANGE = 50;
   const insets = useSafeAreaInsets();
   const [currentDate, setCurrentDate] = React.useState<Date>(new Date());
-  // console.log('currentDate', currentDate);
+  const initialDate = React.useRef(dayjs(currentDate));
   const [calendarType, setCalendarType] = React.useState<CalendarType>('month');
-  // console.log('calendarType', calendarType);
+  const [items, setItems] = React.useState<string[]>([]);
+
+  const initItems = (date?: dayjs.Dayjs) => {
+    const lists = [];
+    for (let i = 0; i <= PAST_SCROLL_RANGE + FUTURE_SCROLL_RANGE; i++) {
+      const rangeDate = (date ?? initialDate.current).clone().add(i - PAST_SCROLL_RANGE, calendarType);
+      lists.push(rangeDate.format('YYYY-MM-DD'));
+    }
+    setItems(lists);
+  };
+
+  React.useEffect(() => {
+    initItems();
+  }, [calendarType]);
+
+  React.useEffect(() => {
+    if (items.length > 0) {
+      let currentItem = dayjs(currentDate).clone().format('YYYYMM');
+      let firstItem = dayjs(items[0]).clone().format('YYYYMM');
+      let lastItem = dayjs(items[items.length - 1])
+        .clone()
+        .format('YYYYMM');
+      if (calendarType === 'week') {
+        currentItem = dayjs(currentDate).clone().startOf('week').format('YYYYMMDD');
+        firstItem = dayjs(items[0]).clone().startOf('week').format('YYYYMMDD');
+        lastItem = dayjs(items[items.length - 1])
+          .clone()
+          .startOf('week')
+          .format('YYYYMMDD');
+      }
+      if (currentItem <= firstItem) {
+        setItems([]);
+        initialDate.current = dayjs(firstItem).clone();
+        initItems(initialDate.current);
+      }
+      if (currentItem >= lastItem) {
+        setItems([]);
+        initialDate.current = dayjs(lastItem).clone();
+        initItems(initialDate.current);
+      }
+    }
+  }, [items, calendarType, currentDate]);
 
   return (
     <Layout>
@@ -21,8 +63,11 @@ const CalendarView = () => {
         <CalendarList
           currentDate={currentDate}
           setCurrentDate={setCurrentDate}
+          initialDate={initialDate}
           calendarType={calendarType}
           setCalendarType={setCalendarType}
+          items={items}
+          PAST_SCROLL_RANGE={PAST_SCROLL_RANGE}
         />
       </View>
       <View>

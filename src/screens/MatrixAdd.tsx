@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Alert, Platform, Pressable, View } from 'react-native';
 import { useNavigation } from '@react-navigation/core';
@@ -8,12 +8,13 @@ import { SquarePlus } from 'lucide-react-native';
 import { useColorScheme } from 'nativewind';
 
 import CategoryForm from '@/components/CategoryForm.tsx';
-import DetePickerButton from '@/components/Form/DatePickerButton.tsx';
-import Dropdown from '@/components/Form/DropDown.tsx';
+import DatePickerButton from '@/components/Form/DatePickerButton.tsx';
 import Form from '@/components/Form/Form.tsx';
 import Input from '@/components/Form/Input.tsx';
 import RadioGroup from '@/components/Form/RadioGroup.tsx';
+import WheelPicker from '@/components/Form/WheelPicker.tsx';
 import useMatrixStore from '@/stores/matrix.ts';
+import { useMatrixTypeStore } from '@/stores/matrixType.ts';
 import { MatrixAddType } from '@/types/matrix.ts';
 import { HomeStackParamList } from '@/types/navigation.ts';
 
@@ -26,6 +27,7 @@ const MatrixAdd = () => {
   const [isVisibleCategory, setIsVisibleCategory] = useState<boolean>(false);
 
   const { matrix, matrixs, addTodo } = useMatrixStore();
+  const { matrixType } = useMatrixTypeStore();
 
   const { colorScheme } = useColorScheme();
 
@@ -33,7 +35,9 @@ const MatrixAdd = () => {
     control,
     handleSubmit,
     formState: { errors },
+    setValue,
     reset,
+    watch,
   } = useForm<MatrixAddType>({
     defaultValues: {
       categoryId: matrix?.id.toString(),
@@ -41,6 +45,7 @@ const MatrixAdd = () => {
       importance: 'doit',
       endDate: '',
       alram: 'N',
+      alramTime: '',
     },
   });
 
@@ -60,31 +65,70 @@ const MatrixAdd = () => {
     }
   };
 
-  const onCloseHandler = () => {
-    setIsVisibleMatrixAdd(false);
-
+  const onResetHandler = () => {
     reset({
       categoryId: matrix?.id.toString(),
       content: '',
       importance: 'doit',
       endDate: '',
       alram: 'N',
+      alramTime: '',
     });
   };
 
+  const onCloseHandler = () => {
+    setIsVisibleMatrixAdd(false);
+
+    onResetHandler();
+  };
+
   const onSubmitHandler = (data: MatrixAddType) => {
+    if (data.alram === 'Y' && !data.alramTime) {
+      Alert.alert('알람 시간을 선택해주세요.');
+      return;
+    }
+
     const matrixId = parseInt(data.categoryId, 10);
-    const matrixType = data.importance;
+
+    const matrixTypeKey = data.importance;
+
     const todo = {
       content: data.content,
       endDate: dayjs(data.endDate).toDate(),
       alram: data.alram,
+      alramTime: data.alram === 'Y' ? data.alramTime : undefined,
       isChecked: false,
     };
 
-    addTodo(matrixId, matrixType, todo);
+    // 알람 시간이 설정되었을 경우 푸시 알람 보내기
+    if (data.alram === 'Y' && data.alramTime) {
+      // 알람 시간 설정
+      const alramTime = parseInt(data.alramTime, 10);
+      const endDate = dayjs(data.endDate).subtract(alramTime, 'minute').toDate();
+
+      // 알람 시간이 현재 시간보다 작을 경우
+      if (endDate < new Date()) {
+        Alert.alert('알람 시간이 현재 시간보다 작습니다.');
+        return;
+      }
+    }
+
+    addTodo(matrixId, matrixTypeKey, todo);
     setIsVisibleMatrixAdd(false);
+    onResetHandler();
   };
+
+  useEffect(() => {
+    if (isVisibleMatrixAdd && matrix?.id) {
+      setValue(`categoryId`, matrix.id.toString());
+    }
+  }, [matrix, isVisibleMatrixAdd]);
+
+  useEffect(() => {
+    if (isVisibleMatrixAdd && matrixType) {
+      setValue(`importance`, matrixType);
+    }
+  }, [matrixType, isVisibleMatrixAdd]);
 
   return (
     <View>
@@ -99,19 +143,21 @@ const MatrixAdd = () => {
         <SquarePlus size={28} className="font-semibold" color={colorScheme === 'light' ? 'black' : 'white'} />
       </Pressable>
       <Form isVisble={isVisibleMatrixAdd} onClose={onCloseHandler} onSubmit={handleSubmit(onSubmitHandler)}>
-        <Dropdown
-          label="카테고리 선택"
-          placeholder="카테고리를 선택해주세요"
-          name="categoryId"
-          control={control}
-          errors={errors.categoryId}
-          darkMode={colorScheme === 'dark'}
+        <WheelPicker
           options={matrixs.map((item) => {
             return {
               label: item.category,
               value: item.id.toString(),
             };
           })}
+          label="카테고리 선택"
+          placeholder="카테고리를 선택해주세요"
+          name="categoryId"
+          control={control}
+          title="키테고리 선택"
+          errors={errors.categoryId}
+          darkMode={colorScheme === 'dark'}
+          defaultValue={matrix?.id.toString()}
         />
         <Input
           label="할 일 작성"
@@ -138,14 +184,16 @@ const MatrixAdd = () => {
               value: item,
             };
           })}
+          defaultValue={matrixType}
         />
-        <DetePickerButton
+        <DatePickerButton
           label="마감 날짜/시간 선택"
           name="endDate"
           control={control}
           errors={errors.endDate}
           errorMessage={errors.endDate?.message}
           placeholder="마감 날짜/시간을 선택해주세요"
+          title="마감 날짜/시간 선택"
           rules={{
             required: '마감 날짜/시간을 선택해주세요.',
             validate: {
@@ -170,6 +218,30 @@ const MatrixAdd = () => {
           })}
           darkMode={colorScheme === 'dark'}
         />
+        {watch().alram === 'Y' && (
+          <WheelPicker
+            options={[
+              { label: '마감 시간', value: '0' },
+              { label: '5분 전', value: '5' },
+              { label: '10분 전', value: '10' },
+              { label: '15분 전', value: '15' },
+              { label: '30분 전', value: '30' },
+              { label: '1시간 전', value: '60' },
+              { label: '2시간 전', value: '120' },
+              { label: '1일 전', value: '1440' },
+            ]}
+            control={control}
+            name="alramTime"
+            title="알림 시간 선택"
+            placeholder="알림 시간을 선택해주세요"
+            errors={errors.alramTime}
+            errorMessage={errors.alramTime?.message}
+            darkMode={colorScheme === 'dark'}
+            rules={{
+              required: '알림 시간을 선택해주세요.',
+            }}
+          />
+        )}
       </Form>
       <CategoryForm matrixs={matrixs} open={isVisibleCategory} onClose={() => setIsVisibleCategory(false)} />
     </View>

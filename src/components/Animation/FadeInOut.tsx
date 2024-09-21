@@ -13,8 +13,6 @@ const FadeInFadeOut: React.FC<FadeInFadeOutProps> = ({ duration = 500, children,
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    console.log('🔥🔥/ :16 - fadeIn = ', fadeIn);
-
     Animated.timing(fadeAnim, {
       toValue: fadeIn ? 1 : 0,
       duration,

@@ -28,7 +28,7 @@ const CategoryForm = ({ matrixs, open, onClose, updateId }: CategoryFormProps) =
 
   const [isSelectedColor, setIsSelectedColor] = useState<string>('#ffffff');
 
-  const { addMatrix, updateMatrix } = useMatrixStore();
+  const { addCategory, updateMatrix } = useMatrixStore();
 
   const { colorScheme } = useColorScheme();
 
@@ -50,7 +50,7 @@ const CategoryForm = ({ matrixs, open, onClose, updateId }: CategoryFormProps) =
       onCloseModal();
     } else {
       // 카테고리 zustand store에 추가
-      addMatrix({
+      addCategory({
         category: categoryValue.trim(),
         categoryBackgroundColor: isSelectedColor,
       });

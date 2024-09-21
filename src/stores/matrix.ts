@@ -7,13 +7,14 @@ import { MatrixType, TodoType } from '@/types/matrix.ts';
 type MatrixStoreType = {
   matrix: MatrixType | null;
   matrixs: MatrixType[];
-  addMatrix: (matrix: Omit<MatrixType, 'id' | 'matrixs'>) => void;
+  addCategory: (matrix: Omit<MatrixType, 'id' | 'matrixs'>) => void;
   deleteMatrix: (id: number) => void;
   updateMatrix: (id: number, matrix: Omit<MatrixType, 'id' | 'matrixs'>) => void;
   selectMatrix: (id: number) => void;
   addTodo: (matrixId: number, matrixType: keyof MatrixType['matrixs'], content: Omit<TodoType, 'id'>) => void;
   deleteTodo: (matrixId: number, matrixType: keyof MatrixType['matrixs'], todoId: number) => void;
   toggleTodoChecked: (matrixId: number, matrixType: keyof MatrixType['matrixs'], todoId: number) => void;
+  resetMatrixs: () => void;
 };
 
 const useMatrixStore = create(
@@ -25,7 +26,7 @@ const useMatrixStore = create(
       // 매트릭스를 선택하는 함수
       selectMatrix: (id) => set((state) => ({ matrix: state.matrixs.find((matrix) => matrix.id === id) })),
       // 새로운 매트릭스를 추가하는 함수
-      addMatrix: (matrix) =>
+      addCategory: (matrix) =>
         set((state) => {
           const newMatrix = {
             ...matrix,
@@ -37,6 +38,12 @@ const useMatrixStore = create(
               eliminate: { backgroundColor: undefined, contents: [] },
             },
           };
+
+          // 매트릭스 데이터가 없을 경우
+          if (!state.matrix) {
+            return { matrix: newMatrix, matrixs: [...state.matrixs, newMatrix] };
+          }
+
           return { matrixs: [...state.matrixs, newMatrix] };
         }),
       // 매트릭스를 업데이트하는 함수
@@ -138,6 +145,8 @@ const useMatrixStore = create(
           matrixs[matrixIndex] = newMatrix;
           return { matrixs };
         }),
+      // 매트릭스 초기화 함수
+      resetMatrixs: () => set({ matrix: null, matrixs: [] }),
     }),
     {
       name: 'matrix-storage',

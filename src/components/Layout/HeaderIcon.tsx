@@ -14,7 +14,7 @@ type HeaderIconProps = {
 
 const HeaderIcon = ({ icons, headerClassName }: HeaderIconProps) => {
   return (
-    <View className={cn('flex-row gap-3', headerClassName)}>
+    <View className={cn('flex-row gap-3', headerClassName)} style={{ zIndex: 99 }}>
       {icons?.map(({ name, icon, onPress }) => (
         <Pressable key={name} onPress={onPress}>
           {icon}

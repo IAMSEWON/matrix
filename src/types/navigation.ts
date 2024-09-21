@@ -18,6 +18,7 @@ export type HomeStackParamList = {
     matrixType: keyof MatrixType['matrixs'];
   };
   Category: undefined;
+  Setting: undefined;
 };
 export type MatrixStackParamList = {
   MatrixAdd: undefined;

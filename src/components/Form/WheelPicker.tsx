@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { Control, Controller, FieldError, RegisterOptions } from 'react-hook-form';
 import { Keyboard, Text, TouchableOpacity, View } from 'react-native';
-import DatePicker from 'react-native-date-picker';
 import { BottomSheetModal } from '@gorhom/bottom-sheet';
-import dayjs from 'dayjs';
+import Picker from '@quidone/react-native-wheel-picker';
 
 import AnimatedBorder from '@/components/Form/AnimatedBorder.tsx';
 import ErrorMessage from '@/components/Form/ErrorMessage.tsx';
@@ -11,21 +10,21 @@ import Label from '@/components/Form/Label.tsx';
 import SheetModal from '@/components/Sheet/SheetModal.tsx';
 import { MatrixAddType } from '@/types/matrix.ts';
 
-type DatePickerButtonProps = {
+type WheelPickerProps = {
   defaultValue?: string;
   label?: string;
   name: keyof MatrixAddType;
   control: Control<MatrixAddType>;
+  options: { label: string; value: string }[];
   errors?: FieldError;
   title?: string;
-  mode?: 'date' | 'time' | 'datetime';
   placeholder: string;
   errorMessage?: string;
   rules?: RegisterOptions<MatrixAddType>;
   darkMode?: boolean;
 };
 
-const DatePickerButton = ({
+const WheelPicker = ({
   defaultValue,
   control,
   name,
@@ -33,12 +32,14 @@ const DatePickerButton = ({
   errors,
   errorMessage,
   title,
-  mode = 'datetime',
+  options,
   placeholder,
   rules,
   darkMode,
-}: DatePickerButtonProps) => {
-  const [date, setDate] = useState<Date>(dayjs().toDate());
+}: WheelPickerProps) => {
+  const [selectedIndex, setSelectedIndex] = useState<number>(
+    defaultValue ? options.findIndex((option) => option.value === defaultValue) : -1,
+  );
 
   const sheetRef = React.useRef<BottomSheetModal>(null);
 
@@ -64,7 +65,7 @@ const DatePickerButton = ({
                 }}
               >
                 <Text style={{ fontWeight: 'bold', color: darkMode ? '#fff' : '#1E1F23' }}>
-                  {(value && dayjs(value).format('YYYY년 MM월 DD일 hh시 mm분')) || placeholder}
+                  {options.filter((option) => option.value === value)[0]?.label || placeholder}
                 </Text>
               </TouchableOpacity>
 
@@ -75,21 +76,22 @@ const DatePickerButton = ({
                 onCancel={() => sheetRef.current?.close()}
                 onConfirm={() => {
                   sheetRef.current?.close();
-                  onChange(date);
+                  const changedValue = options[selectedIndex].value;
+                  onChange(changedValue);
                 }}
                 onConfirmText="선택"
               >
-                <DatePicker
-                  style={{
-                    flex: 1,
-                    marginLeft: 14,
+                <Picker
+                  data={options}
+                  value={value}
+                  onValueChanged={({ item }) => {
+                    const changedIndex = options.findIndex((option) => option.value === item.value);
+                    setSelectedIndex(changedIndex);
                   }}
-                  theme={darkMode ? 'dark' : 'light'}
-                  locale="ko"
-                  date={date}
-                  mode={mode}
-                  minimumDate={new Date()}
-                  onDateChange={setDate}
+                  itemTextStyle={{ color: darkMode ? '#fff' : '#1E1F23' }}
+                  overlayItemStyle={{
+                    backgroundColor: darkMode ? '#fff' : '#1E1F23',
+                  }}
                 />
               </SheetModal>
             </AnimatedBorder>
@@ -103,4 +105,4 @@ const DatePickerButton = ({
   );
 };
 
-export default DatePickerButton;
+export default WheelPicker;

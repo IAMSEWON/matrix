@@ -8,8 +8,6 @@ export type TabStackParamList = {
 export type RootStackParamList = {
   Guide: undefined;
   Main: undefined;
-  CategoryAdd: undefined;
-  MatrixAdd: undefined;
 };
 export type HomeStackParamList = {
   Home: undefined;
@@ -20,6 +18,7 @@ export type HomeStackParamList = {
     matrixType: keyof MatrixType['matrixs'];
   };
   Category: undefined;
+  Setting: undefined;
 };
 export type MatrixStackParamList = {
   MatrixAdd: undefined;

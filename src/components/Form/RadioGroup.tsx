@@ -17,6 +17,7 @@ type RadioGroupProps = {
   errorMessage?: string;
   rules?: RegisterOptions<MatrixAddType>;
   darkMode?: boolean;
+  defaultValue?: string;
 };
 
 const matrixData = ['doit', 'schedule', 'delegate', 'eliminate'];
@@ -66,6 +67,7 @@ const RadioGroup = ({
   errorMessage,
   rules,
   darkMode,
+  defaultValue,
 }: RadioGroupProps) => {
   return (
     <View className="flex-col" style={{ gap: 8, height: 102 }}>
@@ -106,6 +108,7 @@ const RadioGroup = ({
           </View>
         )}
         name={name}
+        defaultValue={defaultValue}
       />
       <ErrorMessage errors={errors} message={errorMessage} />
     </View>

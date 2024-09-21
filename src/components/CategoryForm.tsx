@@ -14,13 +14,12 @@ export type Category = { id: number; check: boolean; category: string };
 
 type CategoryFormProps = {
   matrixs: MatrixType[];
-  open?: boolean;
+  open: boolean;
   onClose: () => void;
   updateId?: number;
-  modal?: boolean;
 };
 
-const CategoryForm = ({ matrixs, open, onClose, updateId, modal }: CategoryFormProps) => {
+const CategoryForm = ({ matrixs, open, onClose, updateId }: CategoryFormProps) => {
   const inputRef = useRef<TextInput>(null);
 
   const [categoryValue, setCategoryValue] = useState<string>('');
@@ -29,7 +28,7 @@ const CategoryForm = ({ matrixs, open, onClose, updateId, modal }: CategoryFormP
 
   const [isSelectedColor, setIsSelectedColor] = useState<string>('#ffffff');
 
-  const { addMatrix, updateMatrix } = useMatrixStore();
+  const { addCategory, updateMatrix } = useMatrixStore();
 
   const { colorScheme } = useColorScheme();
 
@@ -51,7 +50,7 @@ const CategoryForm = ({ matrixs, open, onClose, updateId, modal }: CategoryFormP
       onCloseModal();
     } else {
       // 카테고리 zustand store에 추가
-      addMatrix({
+      addCategory({
         category: categoryValue.trim(),
         categoryBackgroundColor: isSelectedColor,
       });
@@ -84,67 +83,6 @@ const CategoryForm = ({ matrixs, open, onClose, updateId, modal }: CategoryFormP
       }
     }
   }, [updateId]);
-
-  if (!modal) {
-    return (
-      <>
-        <View className="flex-1 items-center justify-center gap-5">
-          <View className="w-10/12 flex-1 items-center">
-            <TextInput
-              ref={inputRef}
-              keyboardAppearance={colorScheme}
-              className="w-full text-center text-3xl font-bold dark:text-white"
-              value={categoryValue}
-              onChangeText={onChangeCategoryText}
-              placeholder={placeholderData[0]}
-              placeholderTextColor="#999999"
-              returnKeyType="done"
-              autoFocus
-              onSubmitEditing={onAddCategory}
-            />
-            {/* placeholder */}
-            {!categoryValue &&
-              placeholderData
-                .filter((item, index) => index > 0)
-                .map((item) => {
-                  return (
-                    <Text key={item} className="w-full text-center text-3xl font-bold text-[#999999]">
-                      {item}
-                    </Text>
-                  );
-                })}
-            {/* <FadeInFadeOut style={{ marginTop: 20 }} fadeIn={categoryValue.length > 0}> */}
-            {/*  <Button variant="outline" onPress={() => setIsOpenColorPicker(true)}> */}
-            {/*    <View className="flex flex-row items-center gap-2"> */}
-            {/*      <View */}
-            {/*        style={{ */}
-            {/*          width: 24, */}
-            {/*          height: 24, */}
-            {/*          borderRadius: 20, */}
-            {/*          borderWidth: 1, */}
-            {/*          borderColor: '#e4e4e7', */}
-            {/*          backgroundColor: isSelectedColor, */}
-            {/*        }} */}
-            {/*      /> */}
-            {/*      <Text className="font-semibold">배경 선택</Text> */}
-            {/*    </View> */}
-            {/*  </Button> */}
-            {/* </FadeInFadeOut> */}
-          </View>
-        </View>
-        <ColorPicker
-          open={isOpenColorPicker}
-          onClose={() => {
-            setIsOpenColorPicker(false);
-          }}
-          onSelect={(color) => {
-            setIsOpenColorPicker(false);
-            setIsSelectedColor(color);
-          }}
-        />
-      </>
-    );
-  }
 
   return (
     <Modal animationType="slide" visible={open} onRequestClose={onCloseModal} presentationStyle="pageSheet">

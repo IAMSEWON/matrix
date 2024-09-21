@@ -9,6 +9,7 @@ import { Button } from '@/components/Button.tsx';
 import GradientText from '@/components/GradientText.tsx';
 import Layout from '@/components/Layout/Layout.tsx';
 import { RootStackParamList } from '@/types/navigation.ts';
+import { setData } from '@/utils/storage.ts';
 
 type GuideNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Guide'>;
 
@@ -130,11 +131,16 @@ const Guide = ({ navigation }: { navigation: GuideNavigationProp }) => {
 
   const [carouselIndex, setCarouselIndex] = useState(0);
 
+  const onSaveGuide = async () => {
+    await setData('guideKey', true);
+    navigation.navigate('Main');
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-white">
       <Layout className="gap-12">
         <View className="mr-2 items-end">
-          <Button variant="outline" className="border-0" onPress={() => navigation.navigate('CategoryAdd')}>
+          <Button variant="outline" className="border-0" onPress={onSaveGuide}>
             <Text>스킵하기</Text>
           </Button>
         </View>
@@ -174,7 +180,7 @@ const Guide = ({ navigation }: { navigation: GuideNavigationProp }) => {
               className="border-0"
               onPress={() => {
                 if (carouselIndex === matrixGuide.length - 1) {
-                  navigation.navigate('CategoryAdd');
+                  onSaveGuide();
                 } else {
                   carouselRef.current?.next();
                 }

@@ -13,10 +13,12 @@ import Form from '@/components/Form/Form.tsx';
 import Input from '@/components/Form/Input.tsx';
 import RadioGroup from '@/components/Form/RadioGroup.tsx';
 import WheelPicker from '@/components/Form/WheelPicker.tsx';
+import { ALRAM_TIME, IMPORTANCE } from '@/constants.ts';
 import useMatrixStore from '@/stores/matrix.ts';
 import { useMatrixTypeStore } from '@/stores/matrixType.ts';
 import { MatrixAddType } from '@/types/matrix.ts';
 import { HomeStackParamList } from '@/types/navigation.ts';
+import { onCreateTriggerNotification } from '@/utils/notifications.ts';
 
 type MatrixAddNavigationProp = NativeStackNavigationProp<HomeStackParamList, 'MatrixAdd'>;
 
@@ -102,15 +104,24 @@ const MatrixAdd = () => {
 
     // 알람 시간이 설정되었을 경우 푸시 알람 보내기
     if (data.alram === 'Y' && data.alramTime) {
-      // 알람 시간 설정
+      // 알람 시간
       const alramTime = parseInt(data.alramTime, 10);
+
+      // 마감 시간
       const endDate = dayjs(data.endDate).subtract(alramTime, 'minute').toDate();
 
-      // 알람 시간이 현재 시간보다 작을 경우
-      if (endDate < new Date()) {
-        Alert.alert('알람 시간이 현재 시간보다 작습니다.');
-        return;
-      }
+      // 메세지
+      const body =
+        (data.alramTime as keyof typeof ALRAM_TIME) === '0'
+          ? '마감되었습니다.'
+          : `마감 ${ALRAM_TIME[data.alramTime as keyof typeof ALRAM_TIME]} 전 입니다.`;
+
+      onCreateTriggerNotification({
+        id: `${matrix?.category}-${matrixId}`,
+        time: endDate,
+        title: IMPORTANCE[data.importance],
+        body: `${data.content} 할 일이 ${body}`,
+      });
     }
 
     addTodo(matrixId, matrixTypeKey, todo);

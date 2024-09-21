@@ -38,7 +38,7 @@ const WheelPicker = ({
   darkMode,
 }: WheelPickerProps) => {
   const [selectedIndex, setSelectedIndex] = useState<number>(
-    defaultValue ? options.findIndex((option) => option.value === defaultValue) : -1,
+    defaultValue ? options.findIndex((option) => option.value === defaultValue) : 0,
   );
 
   const sheetRef = React.useRef<BottomSheetModal>(null);
@@ -86,6 +86,7 @@ const WheelPicker = ({
                   value={value}
                   onValueChanged={({ item }) => {
                     const changedIndex = options.findIndex((option) => option.value === item.value);
+
                     setSelectedIndex(changedIndex);
                   }}
                   itemTextStyle={{ color: darkMode ? '#fff' : '#1E1F23' }}

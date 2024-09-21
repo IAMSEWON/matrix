@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import dayjs from 'dayjs';
@@ -7,12 +7,14 @@ import FadeInFadeOut from '@/components/Animation/FadeInOut.tsx';
 import CheckBox from '@/components/CheckBox.tsx';
 import Layout from '@/components/Layout/Layout.tsx';
 import useMatrixStore from '@/stores/matrix.ts';
+import { useMatrixTypeStore } from '@/stores/matrixType.ts';
 import { HomeStackParamList } from '@/types/navigation.ts';
 
 type MatrixTodoNavigationProp = NativeStackScreenProps<HomeStackParamList, 'MatrixTodo'>;
 
 const MatrixTodo = ({ route }: MatrixTodoNavigationProp) => {
   const { matrix, toggleTodoChecked } = useMatrixStore();
+  const { setMatrixType } = useMatrixTypeStore();
 
   const { matrixType } = route.params;
 
@@ -20,6 +22,17 @@ const MatrixTodo = ({ route }: MatrixTodoNavigationProp) => {
   const onCheckTodoHandler = (matrixId: number, todoId: number) => {
     toggleTodoChecked(matrixId, matrixType, todoId);
   };
+
+  useEffect(() => {
+    // 스크린 진입 시 matrixType 값 설정
+    // 해당 스크린에서 매트릭스 등록 시 현재 매트릭스 스크린에 구분하여 default 값으로 설정
+    setMatrixType(matrixType);
+
+    return () => {
+      // 스크린 벗어날 시 값 비워주기
+      setMatrixType('');
+    };
+  }, []);
 
   return (
     <Layout>

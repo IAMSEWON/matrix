@@ -4,6 +4,7 @@ export type TodoType = {
   isChecked: boolean;
   endDate: Date;
   alram: 'Y' | 'N';
+  alramTime?: string;
 };
 
 export type MatrixMenuType = {
@@ -29,4 +30,5 @@ export type MatrixAddType = {
   alram: 'Y' | 'N';
   endDate: string;
   importance: keyof MatrixType['matrixs'];
+  alramTime: string;
 };

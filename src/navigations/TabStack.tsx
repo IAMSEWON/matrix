@@ -51,9 +51,6 @@ const TabStack = () => {
           tabBarButton: () => {
             return <MatrixAdd />;
           },
-          tabBarIconStyle: {
-            top: Platform.OS === 'android' ? 10 : 14,
-          },
         }}
       >
         {() => null}

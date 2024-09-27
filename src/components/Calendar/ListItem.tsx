@@ -19,8 +19,8 @@ interface IProps {
 }
 
 const SCREEN_WIDTH = Dimensions.get('screen').width - 16;
-const CalendarItem = ({ date, currentDate, onPressDay, calendarType, setCalendarType }: IProps) => {
-  // console.log('render CalendarItem!!!!! date', date);
+const ListItem = ({ date, currentDate, onPressDay, calendarType, setCalendarType }: IProps) => {
+  // console.log('render ListItem!!!!! date', date);
   const thisMonth = dayjs(date).clone();
   // 월별 캘린더 주 아이템 리스트
   const initMonthDates = React.useMemo(() => {
@@ -177,7 +177,7 @@ const CalendarItem = ({ date, currentDate, onPressDay, calendarType, setCalendar
   );
 };
 
-export default React.memo(CalendarItem, (prevProps, nextProps) => {
+export default React.memo(ListItem, (prevProps, nextProps) => {
   // 날짜가 변경된 경우, 지난달과 변경된달을 제외하고 메모이징, 지난달은 선택했던 날짜 해제하기 위해 리렌더링
   if (prevProps.calendarType !== nextProps.calendarType) {
     return false;

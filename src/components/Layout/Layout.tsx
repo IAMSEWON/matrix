@@ -17,7 +17,7 @@ const Layout = ({
 
   return (
     <View
-      className={cn('flex-1 px-2 py-2', className)}
+      className={cn('px-2 py-2', className)}
       style={[{ backgroundColor: colorScheme === 'light' ? '#fff' : '#1E1F23' }, style]}
     >
       {children}

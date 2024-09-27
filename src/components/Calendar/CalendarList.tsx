@@ -16,7 +16,7 @@ import { SquareChevronLeft, SquareChevronRight } from 'lucide-react-native';
 
 import { CalendarType } from '@/constants';
 
-import CalendarItem from './CalendarItem';
+import ListItem from './ListItem';
 
 interface IProps {
   currentDate: Date;
@@ -117,7 +117,7 @@ const CalendarList = ({
   const renderItem = React.useCallback(
     (props: { item: string }) => {
       return (
-        <CalendarItem
+        <ListItem
           date={props.item}
           currentDate={currentDate}
           onPressDay={onPressDay}

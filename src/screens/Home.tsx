@@ -9,39 +9,39 @@ import { HomeStackParamList } from '@/types/navigation.ts';
 type HomeNavigationProp = NativeStackNavigationProp<HomeStackParamList, 'Home'>;
 
 const Home = ({ navigation }: { navigation: HomeNavigationProp }) => {
-  const { matrix } = useMatrixStore();
+  const { matrix, resetMatrixs } = useMatrixStore();
 
   return (
     <Layout>
-      {matrix ? (
+      {matrix?.matrixs ? (
         <MatrixLayout
           doit={{
             onPress: () =>
               navigation.navigate('MatrixTodo', {
                 matrixType: 'doit',
               }),
-            contents: matrix?.matrixs.doit.contents,
+            contents: matrix?.matrixs.filter((item) => item.importance === 'doit'),
           }}
           schedule={{
             onPress: () =>
               navigation.navigate('MatrixTodo', {
                 matrixType: 'schedule',
               }),
-            contents: matrix?.matrixs.schedule.contents,
+            contents: matrix?.matrixs.filter((item) => item.importance === 'schedule'),
           }}
           delegate={{
             onPress: () =>
               navigation.navigate('MatrixTodo', {
                 matrixType: 'delegate',
               }),
-            contents: matrix?.matrixs.delegate.contents,
+            contents: matrix?.matrixs.filter((item) => item.importance === 'delegate'),
           }}
           eliminate={{
             onPress: () =>
               navigation.navigate('MatrixTodo', {
                 matrixType: 'eliminate',
               }),
-            contents: matrix?.matrixs.eliminate.contents,
+            contents: matrix?.matrixs.filter((item) => item.importance === 'eliminate'),
           }}
         />
       ) : (

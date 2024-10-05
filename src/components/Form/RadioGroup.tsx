@@ -5,17 +5,17 @@ import { Pressable, Text, View } from 'react-native';
 import AnimatedBorder from '@/components/Form/AnimatedBorder.tsx';
 import ErrorMessage from '@/components/Form/ErrorMessage.tsx';
 import Label from '@/components/Form/Label.tsx';
-import { MatrixAddType } from '@/types/matrix.ts';
+import { TodoAddType } from '@/types/matrix.ts';
 
 type RadioGroupProps = {
-  control: Control<MatrixAddType>;
-  name: keyof MatrixAddType;
+  control: Control<TodoAddType>;
+  name: keyof TodoAddType;
   label: string;
   options: { label: string; value: string }[];
   type?: 'MATRIX' | 'DEFAULT';
   errors?: FieldError;
   errorMessage?: string;
-  rules?: RegisterOptions<MatrixAddType>;
+  rules?: RegisterOptions<TodoAddType>;
   darkMode?: boolean;
   defaultValue?: string;
 };

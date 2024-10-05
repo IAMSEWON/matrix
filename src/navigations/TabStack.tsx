@@ -48,8 +48,8 @@ const TabStack = () => {
       <Tab.Screen
         name="MatrixAdd"
         options={{
-          tabBarButton: () => {
-            return <MatrixAdd />;
+          tabBarButton: (props) => {
+            return <MatrixAdd {...props} />;
           },
         }}
       >

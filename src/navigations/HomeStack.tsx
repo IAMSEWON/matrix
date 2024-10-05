@@ -28,7 +28,7 @@ const matrixTitle = {
 } as const;
 
 const HomeStack = ({ navigation }: HomeStackProps) => {
-  const { matrix, matrixs, selectMatrix } = useMatrixStore();
+  const { matrix, matrixs, selectedMatrix } = useMatrixStore();
   const { colorScheme } = useColorScheme();
 
   const color = colorScheme === 'light' ? '#fff' : '#1E1F23';
@@ -73,9 +73,9 @@ const HomeStack = ({ navigation }: HomeStackProps) => {
         options={{
           headerTitle: () => (
             <SwipeText
-              value={matrix?.category || '카테고리'}
-              texts={matrixs.map((item) => item.category)}
-              onScroll={(index) => selectMatrix(matrixs[index].id)}
+              value={matrix?.categoryName || '카테고리'}
+              texts={matrixs.map((item) => item.categoryName)}
+              onScroll={(index) => selectedMatrix(matrixs[index].categoryId)}
               onPress={() => navigation.navigate('Category')}
               darkMode={colorScheme === 'dark'}
             />

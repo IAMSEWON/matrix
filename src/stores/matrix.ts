@@ -2,149 +2,203 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist, PersistOptions } from 'zustand/middleware';
 
-import { MatrixType, TodoType } from '@/types/matrix.ts';
+import { MatrixType, TodoAddType, TodoType, TodoUpdateType } from '@/types/matrix.ts';
 
 type MatrixStoreType = {
   matrix: MatrixType | null;
   matrixs: MatrixType[];
-  addCategory: (matrix: Omit<MatrixType, 'id' | 'matrixs'>) => void;
-  deleteMatrix: (id: number) => void;
-  updateMatrix: (id: number, matrix: Omit<MatrixType, 'id' | 'matrixs'>) => void;
-  selectMatrix: (id: number) => void;
-  addTodo: (matrixId: number, matrixType: keyof MatrixType['matrixs'], content: Omit<TodoType, 'id'>) => void;
-  deleteTodo: (matrixId: number, matrixType: keyof MatrixType['matrixs'], todoId: number) => void;
-  toggleTodoChecked: (matrixId: number, matrixType: keyof MatrixType['matrixs'], todoId: number) => void;
+  // 매트릭스 핸들러
+  selectedMatrix: (id: number) => void;
+  createdMatrix: (categoryName: string) => void;
+  updatedMatrix: (id: number, name: string) => void;
+  deletedMatrix: (id: number) => void;
+  // 매트릭스 할 일 핸들러
+  createdTodo: (todo: TodoAddType) => void;
+  updatedTodo: (todo: TodoUpdateType) => void;
+  deletedTodo: ({ categoryId, todoId }: { categoryId: number; todoId: number }) => void;
+  checkedTodo: ({ categoryId, todoId }: { categoryId: number; todoId: number }) => void;
   resetMatrixs: () => void;
 };
 
 const useMatrixStore = create(
   persist<MatrixStoreType>(
     (set) => ({
-      // 선택된 카테고리 매트릭스
+      // 선택된 매트릭스 객체
       matrix: null,
+      // 매트릭스 리스트
       matrixs: [],
-      // 매트릭스를 선택하는 함수
-      selectMatrix: (id) => set((state) => ({ matrix: state.matrixs.find((matrix) => matrix.id === id) })),
-      // 새로운 매트릭스를 추가하는 함수
-      addCategory: (matrix) =>
+      // 매트릭스 선택 함수
+      selectedMatrix: (id) => set((state) => ({ matrix: state.matrixs.find((matrix) => matrix.categoryId === id) })),
+      // 매트릭스 추가하는데 아이디는 1부터 증가하고
+      // matrixs 배열의 데이터가 없을 경우 matrix 객체에 데이터 추가
+      createdMatrix: (categoryName) =>
         set((state) => {
-          const newMatrix = {
-            ...matrix,
-            id: state.matrixs.length ? state.matrixs[state.matrixs.length - 1].id + 1 : 1,
-            matrixs: {
-              doit: { backgroundColor: undefined, contents: [] },
-              schedule: { backgroundColor: undefined, contents: [] },
-              delegate: { backgroundColor: undefined, contents: [] },
-              eliminate: { backgroundColor: undefined, contents: [] },
-            },
+          const newMatrix: MatrixType = {
+            categoryId: (state.matrixs[state.matrixs.length - 1]?.categoryId ?? 0) + 1,
+            categoryName,
+            matrixs: [],
           };
 
-          // 매트릭스 데이터가 없을 경우
-          if (!state.matrix) {
-            return { matrix: newMatrix, matrixs: [...state.matrixs, newMatrix] };
+          return !state.matrix
+            ? { matrix: newMatrix, matrixs: [...state.matrixs, newMatrix] }
+            : { matrixs: [...state.matrixs, newMatrix] };
+        }),
+
+      // 매트릭스 수정 함수
+      updatedMatrix: (id, name) =>
+        set((state) => {
+          // 수정할 매트릭스의 인덱스 값
+          const index = state.matrixs.findIndex((_matrix) => _matrix.categoryId === id);
+
+          // 수정할 매트릭스 데이터
+          const updatedMatrix = {
+            ...state.matrixs[index],
+            categoryName: name,
+          };
+
+          return { matrixs: [...state.matrixs.slice(0, index), updatedMatrix, ...state.matrixs.slice(index + 1)] };
+        }),
+      // 매트릭스 삭제 함수
+      // 삭제할 id와 matrix id 값이 동일한 경우 삭제 후 matrix 초기화
+      // 만약 matrixs 데이터가 있으면 지운 matrixs에 0번째 인덱스 값으로 matrix 초기화
+      deletedMatrix: (id) =>
+        set((state) => {
+          const updatedMatrixs = state.matrixs.filter((matrix) => matrix.categoryId !== id);
+
+          if (state.matrix?.categoryId === id) {
+            return {
+              matrix: updatedMatrixs.length > 0 ? updatedMatrixs[0] : null,
+              matrixs: updatedMatrixs,
+            };
           }
 
-          return { matrixs: [...state.matrixs, newMatrix] };
+          return { matrixs: updatedMatrixs };
         }),
-      // 매트릭스를 업데이트하는 함수
-      updateMatrix: (id, matrix) =>
-        set((state) => {
-          const matrixIndex = state.matrixs.findIndex((_matrix) => _matrix.id === id);
-          const newMatrix = { ...state.matrixs[matrixIndex], ...matrix };
-          const matrixs = [...state.matrixs];
-          matrixs[matrixIndex] = newMatrix;
-          return { matrixs };
-        }),
-      // 매트릭스를 삭제하는 함수
-      deleteMatrix: (id) => set((state) => ({ matrixs: state.matrixs.filter((matrix) => matrix.id !== id) })),
-      // 매트릭스에 할 일을 추가하는 함수
-      addTodo: (matrixId, matrixType, todo) =>
-        set((state) => {
-          // 현재 선택된 매트릭스를 업데이트
-          const selectedMatrix = state.matrixs.find((matrix) => matrix.id === matrixId);
-          if (!selectedMatrix) return state;
 
-          // 새로운 할 일 추가 로직
+      // 할 일 추가 함수
+
+      // 할 일 추가 시 categoryId 값은 선택된 matrix의 categoryId 값
+      createdTodo: (todo) =>
+        set((state) => {
+          const { categoryId } = todo;
+
+          const selectedCategory = state.matrixs.find((matrix) => matrix.categoryId === categoryId);
+
+          if (!selectedCategory) return state;
+
           const newTodo: TodoType = {
+            todoId: (selectedCategory.matrixs[selectedCategory.matrixs.length - 1]?.todoId ?? 0) + 1,
+            isChecked: false,
             ...todo,
-            id: selectedMatrix.matrixs[matrixType].contents.length
-              ? selectedMatrix.matrixs[matrixType].contents[selectedMatrix.matrixs[matrixType].contents.length - 1].id +
-                1
-              : 1,
           };
 
-          const newMatrix = {
-            ...selectedMatrix,
-            matrixs: {
-              ...selectedMatrix.matrixs,
-              [matrixType]: {
-                ...selectedMatrix.matrixs[matrixType],
-                contents: [...selectedMatrix.matrixs[matrixType].contents, newTodo],
-              },
-            },
+          const updateMatrix = {
+            ...selectedCategory,
+            matrixs: [...selectedCategory.matrixs, newTodo],
           };
-          const matrixs = state.matrixs.map((matrix) => (matrix.id === matrixId ? newMatrix : matrix));
 
-          return { matrixs, matrix: newMatrix };
+          return state.matrix?.categoryId === categoryId
+            ? {
+                matrix: updateMatrix,
+                matrixs: state.matrixs.map((matrix) => (matrix.categoryId === categoryId ? updateMatrix : matrix)),
+              }
+            : { matrixs: state.matrixs.map((matrix) => (matrix.categoryId === categoryId ? updateMatrix : matrix)) };
         }),
-      toggleTodoChecked: (matrixId, matrixType, todoId) =>
-        set((state) => {
-          const matrixIndex = state.matrixs.findIndex((matrix) => matrix.id === matrixId);
-          if (matrixIndex === -1) return state;
 
-          const matrix = state.matrixs[matrixIndex];
-          const todoIndex = matrix.matrixs[matrixType].contents.findIndex((todo) => todo.id === todoId);
-          if (todoIndex === -1) return state;
+      /*
+       *  투두 업데이트 함수
+       * @param {TodoUpdateType} todo - 업데이트 할 투두 객체
+       *
+       * 만약 importance 값이 변경되면 기존 importance 값의 투두를 삭제하고 새로운 importance 값의 투두에 추가
+       * 새로운 importance 값의 투두에 추가할 때는 todoId 값은 importance 값의 투두 배열의 길이 + 1
+       * */
+      updatedTodo: (todo) =>
+        set((state) => {
+          const { categoryId, importance } = todo;
+
+          const selectedCategory = state.matrixs.find((matrix) => matrix.categoryId === categoryId);
+
+          if (!selectedCategory) return state;
+
+          const index = selectedCategory.matrixs.findIndex((_todo) => _todo.todoId === todo.todoId);
 
           const updatedTodo = {
-            ...matrix.matrixs[matrixType].contents[todoIndex],
-            isChecked: !matrix.matrixs[matrixType].contents[todoIndex].isChecked,
+            ...selectedCategory.matrixs[index],
+            ...todo,
           };
 
-          const updatedMatrix = {
-            ...matrix,
-            matrixs: {
-              ...matrix.matrixs,
-              [matrixType]: {
-                ...matrix.matrixs[matrixType],
-                contents: [
-                  ...matrix.matrixs[matrixType].contents.slice(0, todoIndex),
-                  updatedTodo,
-                  ...matrix.matrixs[matrixType].contents.slice(todoIndex + 1),
-                ],
-              },
-            },
+          const updateMatrix = {
+            ...selectedCategory,
+            matrixs: [
+              ...selectedCategory.matrixs.slice(0, index),
+              updatedTodo,
+              ...selectedCategory.matrixs.slice(index + 1),
+            ],
           };
 
-          const updatedMatrixs = [...state.matrixs];
-          updatedMatrixs[matrixIndex] = updatedMatrix;
-
-          const updatedState = { matrixs: updatedMatrixs, matrix: state.matrix };
-          if (state.matrix?.id === matrixId) {
-            updatedState.matrix = updatedMatrix;
-          }
-
-          return updatedState;
+          return state.matrix?.categoryId === categoryId
+            ? {
+                matrix: updateMatrix,
+                matrixs: state.matrixs.map((matrix) => (matrix.categoryId === categoryId ? updateMatrix : matrix)),
+              }
+            : { matrixs: state.matrixs.map((matrix) => (matrix.categoryId === categoryId ? updateMatrix : matrix)) };
         }),
-      // 매트릭스에서 할 일을 삭제하는 함수
-      deleteTodo: (matrixId, matrixType, todoId) =>
+
+      // 할 일 삭제 함수
+      deletedTodo: (todo) =>
         set((state) => {
-          const matrixIndex = state.matrixs.findIndex((matrix) => matrix.id === matrixId);
-          const matrix = state.matrixs[matrixIndex];
-          const newMatrix = {
-            ...matrix,
-            matrixs: {
-              ...matrix.matrixs,
-              [matrixType]: {
-                ...matrix.matrixs[matrixType],
-                contents: matrix.matrixs[matrixType].contents.filter((todo) => todo.id !== todoId),
-              },
-            },
+          const { categoryId, todoId } = todo;
+
+          const selectedCategory = state.matrixs.find((matrix) => matrix.categoryId === categoryId);
+
+          if (!selectedCategory) return state;
+
+          const updatedMatrixs = selectedCategory.matrixs.filter((todo) => todo.todoId !== todoId);
+
+          const updateMatrix = {
+            ...selectedCategory,
+            matrixs: updatedMatrixs,
           };
-          const matrixs = [...state.matrixs];
-          matrixs[matrixIndex] = newMatrix;
-          return { matrixs };
+
+          return state.matrix?.categoryId === categoryId
+            ? {
+                matrix: updateMatrix,
+                matrixs: state.matrixs.map((matrix) => (matrix.categoryId === categoryId ? updateMatrix : matrix)),
+              }
+            : { matrixs: state.matrixs.map((matrix) => (matrix.categoryId === categoryId ? updateMatrix : matrix)) };
         }),
+      checkedTodo: (todo) =>
+        set((state) => {
+          const { categoryId, todoId } = todo;
+
+          const selectedCategory = state.matrixs.find((matrix) => matrix.categoryId === categoryId);
+
+          if (!selectedCategory) return state;
+
+          const index = selectedCategory.matrixs.findIndex((_todo) => _todo.todoId === todoId);
+
+          const updatedTodo = {
+            ...selectedCategory.matrixs[index],
+            isChecked: !selectedCategory.matrixs[index].isChecked,
+          };
+
+          const updateMatrix = {
+            ...selectedCategory,
+            matrixs: [
+              ...selectedCategory.matrixs.slice(0, index),
+              updatedTodo,
+              ...selectedCategory.matrixs.slice(index + 1),
+            ],
+          };
+
+          return state.matrix?.categoryId === categoryId
+            ? {
+                matrix: updateMatrix,
+                matrixs: state.matrixs.map((matrix) => (matrix.categoryId === categoryId ? updateMatrix : matrix)),
+              }
+            : { matrixs: state.matrixs.map((matrix) => (matrix.categoryId === categoryId ? updateMatrix : matrix)) };
+        }),
+
       // 매트릭스 초기화 함수
       resetMatrixs: () => set({ matrix: null, matrixs: [] }),
     }),

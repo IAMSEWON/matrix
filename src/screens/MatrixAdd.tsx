@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Alert, Platform, Pressable, View } from 'react-native';
-import { useNavigation } from '@react-navigation/core';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import dayjs from 'dayjs';
 import { SquarePlus } from 'lucide-react-native';
 import { useColorScheme } from 'nativewind';
@@ -13,23 +12,31 @@ import Form from '@/components/Form/Form.tsx';
 import Input from '@/components/Form/Input.tsx';
 import RadioGroup from '@/components/Form/RadioGroup.tsx';
 import WheelPicker from '@/components/Form/WheelPicker.tsx';
-import { ALRAM_TIME, IMPORTANCE } from '@/constants.ts';
+import { ALRAM_TIME } from '@/constants.ts';
 import useMatrixStore from '@/stores/matrix.ts';
-import { useMatrixTypeStore } from '@/stores/matrixType.ts';
-import { MatrixAddType } from '@/types/matrix.ts';
+import { useMatrixAdd } from '@/stores/matrixAdd.ts';
+import { TodoAddType } from '@/types/matrix.ts';
 import { HomeStackParamList } from '@/types/navigation.ts';
 import { onCreateTriggerNotification } from '@/utils/notifications.ts';
 
-type MatrixAddNavigationProp = NativeStackNavigationProp<HomeStackParamList, 'MatrixAdd'>;
+type MatrixAddNavigationProp = NativeStackScreenProps<HomeStackParamList, 'MatrixAdd'>;
 
-const MatrixAdd = () => {
-  const navigation = useNavigation<MatrixAddNavigationProp>();
+// 할 일 작성 초기화 값
+const resetTodoValue: TodoAddType = {
+  categoryId: 0,
+  content: '',
+  importance: 'doit',
+  endDate: undefined,
+  alram: 'N',
+  alramTime: undefined,
+};
 
-  const [isVisibleMatrixAdd, setIsVisibleMatrixAdd] = useState<boolean>(false);
+const MatrixAdd = ({ route, navigation }: MatrixAddNavigationProp) => {
+  const { isVisibleMatrixAdd, setIsVisibleMatrixAdd, matrixType, editMatrix, setEditMatrix } = useMatrixAdd();
+
   const [isVisibleCategory, setIsVisibleCategory] = useState<boolean>(false);
 
-  const { matrix, matrixs, addTodo } = useMatrixStore();
-  const { matrixType } = useMatrixTypeStore();
+  const { matrix, matrixs, createdTodo, updatedTodo } = useMatrixStore();
 
   const { colorScheme } = useColorScheme();
 
@@ -40,15 +47,8 @@ const MatrixAdd = () => {
     setValue,
     reset,
     watch,
-  } = useForm<MatrixAddType>({
-    defaultValues: {
-      categoryId: matrix?.id.toString(),
-      content: '',
-      importance: 'doit',
-      endDate: '',
-      alram: 'N',
-      alramTime: '',
-    },
+  } = useForm<TodoAddType>({
+    defaultValues: resetTodoValue,
   });
 
   const onPressIconHandler = () => {
@@ -68,78 +68,86 @@ const MatrixAdd = () => {
   };
 
   const onResetHandler = () => {
-    reset({
-      categoryId: matrix?.id.toString(),
-      content: '',
-      importance: 'doit',
-      endDate: '',
-      alram: 'N',
-      alramTime: '',
-    });
+    reset(resetTodoValue);
   };
 
   const onCloseHandler = () => {
     setIsVisibleMatrixAdd(false);
-
+    setEditMatrix(null);
     onResetHandler();
   };
 
-  const onSubmitHandler = (data: MatrixAddType) => {
+  const onTriggerTodoHandler = async (id: string, todo: Omit<TodoAddType, 'todoId'>) => {
+    const { alram, alramTime, endDate, content } = todo;
+
+    // 알람 시간이 설정되었을 경우 푸시 알람 보내기
+    if (alram === 'Y' && alramTime) {
+      // 알람 시간
+      const todoAlramTime = parseInt(alramTime, 10);
+
+      // 마감 시간
+      const todoEndDate = dayjs(endDate).subtract(todoAlramTime, 'minute').toDate();
+
+      // 메세지
+      const body =
+        (alramTime as keyof typeof ALRAM_TIME) === '0'
+          ? '마감되었습니다.'
+          : `마감 ${ALRAM_TIME[alramTime as keyof typeof ALRAM_TIME]} 전 입니다.`;
+
+      await onCreateTriggerNotification({
+        id,
+        time: todoEndDate,
+        title: `${content}가`,
+        body: `${body}`,
+      });
+    }
+  };
+
+  const onSubmitHandler = async (data: TodoAddType) => {
+    // 알람 설정 체크되어있는데 알람 시간을 미체크했을 경우 경고
     if (data.alram === 'Y' && !data.alramTime) {
       Alert.alert('알람 시간을 선택해주세요.');
       return;
     }
 
-    const matrixId = parseInt(data.categoryId, 10);
+    await onTriggerTodoHandler(`${matrix?.categoryId}-${data.categoryId}`, { ...data });
 
-    const matrixTypeKey = data.importance;
-
-    const todo = {
-      content: data.content,
-      endDate: dayjs(data.endDate).toDate(),
-      alram: data.alram,
-      alramTime: data.alram === 'Y' ? data.alramTime : undefined,
-      isChecked: false,
-    };
-
-    // 알람 시간이 설정되었을 경우 푸시 알람 보내기
-    if (data.alram === 'Y' && data.alramTime) {
-      // 알람 시간
-      const alramTime = parseInt(data.alramTime, 10);
-
-      // 마감 시간
-      const endDate = dayjs(data.endDate).subtract(alramTime, 'minute').toDate();
-
-      // 메세지
-      const body =
-        (data.alramTime as keyof typeof ALRAM_TIME) === '0'
-          ? '마감되었습니다.'
-          : `마감 ${ALRAM_TIME[data.alramTime as keyof typeof ALRAM_TIME]} 전 입니다.`;
-
-      onCreateTriggerNotification({
-        id: `${matrix?.category}-${matrixId}`,
-        time: endDate,
-        title: IMPORTANCE[data.importance],
-        body: `${data.content} 할 일이 ${body}`,
+    if (editMatrix) {
+      updatedTodo({
+        ...data,
+        todoId: editMatrix.todoId,
       });
+    } else {
+      createdTodo(data);
     }
 
-    addTodo(matrixId, matrixTypeKey, todo);
     setIsVisibleMatrixAdd(false);
     onResetHandler();
   };
 
   useEffect(() => {
-    if (isVisibleMatrixAdd && matrix?.id) {
-      setValue(`categoryId`, matrix.id.toString());
+    if (isVisibleMatrixAdd && matrix?.categoryId) {
+      setValue('categoryId', matrix.categoryId);
     }
   }, [matrix, isVisibleMatrixAdd]);
 
   useEffect(() => {
+    // todo 페이지에서 추가 버튼 클릭 시 중요도 값 설정
     if (isVisibleMatrixAdd && matrixType) {
-      setValue(`importance`, matrixType);
+      setValue('importance', matrixType);
     }
   }, [matrixType, isVisibleMatrixAdd]);
+
+  useEffect(() => {
+    // 업데이트 시 데이터 초기화
+    if (isVisibleMatrixAdd && editMatrix) {
+      if (editMatrix.categoryId !== undefined) setValue('categoryId', editMatrix.categoryId);
+      if (editMatrix.content !== undefined) setValue('content', editMatrix.content);
+      if (editMatrix.endDate !== undefined) setValue('endDate', editMatrix.endDate);
+      if (editMatrix.alram !== undefined) setValue('alram', editMatrix.alram);
+      if (editMatrix.alramTime !== undefined) setValue('alramTime', editMatrix.alramTime);
+    }
+  }, [matrixType, editMatrix, isVisibleMatrixAdd]);
 
   return (
     <View>
@@ -157,8 +165,8 @@ const MatrixAdd = () => {
         <WheelPicker
           options={matrixs.map((item) => {
             return {
-              label: item.category,
-              value: item.id.toString(),
+              label: item.categoryName,
+              value: item.categoryId.toString(),
             };
           })}
           label="카테고리 선택"
@@ -168,7 +176,7 @@ const MatrixAdd = () => {
           title="키테고리 선택"
           errors={errors.categoryId}
           darkMode={colorScheme === 'dark'}
-          defaultValue={matrix?.id.toString()}
+          defaultValue={matrix?.categoryId.toString()}
         />
         <Input
           label="할 일 작성"
@@ -208,7 +216,7 @@ const MatrixAdd = () => {
           rules={{
             required: '마감 날짜/시간을 선택해주세요.',
             validate: {
-              isDate: (value) => !Number.isNaN(Date.parse(value)) || '유효한 날짜를 입력해주세요.',
+              isDate: (value) => !Number.isNaN(Date.parse(value as string)) || '유효한 날짜를 입력해주세요.',
             },
           }}
           darkMode={colorScheme === 'dark'}

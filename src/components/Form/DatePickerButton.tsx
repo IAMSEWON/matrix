@@ -9,19 +9,19 @@ import AnimatedBorder from '@/components/Form/AnimatedBorder.tsx';
 import ErrorMessage from '@/components/Form/ErrorMessage.tsx';
 import Label from '@/components/Form/Label.tsx';
 import SheetModal from '@/components/Sheet/SheetModal.tsx';
-import { MatrixAddType } from '@/types/matrix.ts';
+import { TodoAddType } from '@/types/matrix.ts';
 
 type DatePickerButtonProps = {
   defaultValue?: string;
   label?: string;
-  name: keyof MatrixAddType;
-  control: Control<MatrixAddType>;
+  name: keyof TodoAddType;
+  control: Control<TodoAddType>;
   errors?: FieldError;
   title?: string;
   mode?: 'date' | 'time' | 'datetime';
   placeholder: string;
   errorMessage?: string;
-  rules?: RegisterOptions<MatrixAddType>;
+  rules?: RegisterOptions<TodoAddType>;
   darkMode?: boolean;
 };
 
@@ -51,7 +51,7 @@ const DatePickerButton = ({
         rules={rules}
         render={({ field: { onChange, value } }) => {
           return (
-            <AnimatedBorder value={value} error={!!errorMessage}>
+            <AnimatedBorder value={value as string} error={!!errorMessage}>
               <TouchableOpacity
                 onPress={() => {
                   sheetRef.current?.present();
@@ -86,7 +86,7 @@ const DatePickerButton = ({
                   }}
                   theme={darkMode ? 'dark' : 'light'}
                   locale="ko"
-                  date={date}
+                  date={value ? dayjs(value).toDate() : date}
                   mode={mode}
                   minimumDate={new Date()}
                   onDateChange={setDate}

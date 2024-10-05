@@ -3,7 +3,6 @@ import { Alert, Modal, Pressable, Text, TextInput, View } from 'react-native';
 import { X } from 'lucide-react-native';
 import { useColorScheme } from 'nativewind';
 
-import ColorPicker from '@/components/ColorPicker.tsx';
 import Layout from '@/components/Layout/Layout.tsx';
 import useMatrixStore from '@/stores/matrix.ts';
 import { MatrixType } from '@/types/matrix.ts';
@@ -24,11 +23,7 @@ const CategoryForm = ({ matrixs, open, onClose, updateId }: CategoryFormProps) =
 
   const [categoryValue, setCategoryValue] = useState<string>('');
 
-  const [isOpenColorPicker, setIsOpenColorPicker] = useState<boolean>(false);
-
-  const [isSelectedColor, setIsSelectedColor] = useState<string>('#ffffff');
-
-  const { addCategory, updateMatrix } = useMatrixStore();
+  const { createdMatrix, updatedMatrix } = useMatrixStore();
 
   const { colorScheme } = useColorScheme();
 
@@ -36,24 +31,20 @@ const CategoryForm = ({ matrixs, open, onClose, updateId }: CategoryFormProps) =
     // 카테고리 입력이 없을 경우
     if (categoryValue === '') {
       Alert.alert('카테고리를 입력해주세요.');
-    } else if (matrixs.some((matrix) => matrix.category === categoryValue.trim() && matrix.id !== updateId)) {
+    } else if (
+      matrixs.some((matrix) => matrix.categoryName === categoryValue.trim() && matrix.categoryId !== updateId)
+    ) {
       // 카테고리 이름이 중복될 경우
       Alert.alert('이미 존재하는 카테고리입니다.');
     } else if (updateId) {
       // 카테고리 zustand store에 업데이트
-      updateMatrix(updateId, {
-        category: categoryValue.trim(),
-        categoryBackgroundColor: isSelectedColor,
-      });
+      updatedMatrix(updateId, categoryValue.trim());
 
       // 상태 초기화 및 모달 닫기
       onCloseModal();
     } else {
       // 카테고리 zustand store에 추가
-      addCategory({
-        category: categoryValue.trim(),
-        categoryBackgroundColor: isSelectedColor,
-      });
+      createdMatrix(categoryValue.trim());
 
       // 상태 초기화 및 모달 닫기
       onCloseModal();
@@ -62,23 +53,20 @@ const CategoryForm = ({ matrixs, open, onClose, updateId }: CategoryFormProps) =
 
   // 카테고리 입력
   const onChangeCategoryText = (text: string) => {
-    // const replaceText = text.replace(/(\s*)/g, '');
     setCategoryValue(text);
   };
 
   // 상태 초기화 및 모달 닫기
   const onCloseModal = () => {
     setCategoryValue('');
-    setIsSelectedColor('#ffffff');
     onClose();
   };
 
   useEffect(() => {
     if (updateId) {
-      const isMatchedMatrix = matrixs.find((matrix) => matrix.id === updateId);
+      const isMatchedMatrix = matrixs.find((matrix) => matrix.categoryId === updateId);
       if (isMatchedMatrix) {
-        setCategoryValue(isMatchedMatrix.category);
-        setIsSelectedColor(isMatchedMatrix.categoryBackgroundColor);
+        setCategoryValue(isMatchedMatrix.categoryName);
         inputRef.current?.focus();
       }
     }
@@ -145,16 +133,15 @@ const CategoryForm = ({ matrixs, open, onClose, updateId }: CategoryFormProps) =
         </View>
       </Layout>
 
-      <ColorPicker
-        open={isOpenColorPicker}
-        onClose={() => {
-          setIsOpenColorPicker(false);
-        }}
-        onSelect={(color) => {
-          setIsOpenColorPicker(false);
-          setIsSelectedColor(color);
-        }}
-      />
+      {/* <ColorPicker */}
+      {/*  open={isOpenColorPicker} */}
+      {/*  onClose={() => { */}
+      {/*    setIsOpenColorPicker(false); */}
+      {/*  }} */}
+      {/*  onSelect={(color) => { */}
+      {/*    setIsOpenColorPicker(false); */}
+      {/*  }} */}
+      {/* /> */}
     </Modal>
   );
 };

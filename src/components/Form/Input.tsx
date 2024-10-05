@@ -5,17 +5,17 @@ import { TextInput, TextInputProps, View } from 'react-native';
 import AnimatedBorder from '@/components/Form/AnimatedBorder.tsx';
 import ErrorMessage from '@/components/Form/ErrorMessage.tsx';
 import Label from '@/components/Form/Label.tsx';
-import { MatrixAddType } from '@/types/matrix.ts';
+import { TodoAddType } from '@/types/matrix.ts';
 import { cn } from '@/utils/tailwind.ts';
 
 type InputProps = {
-  control: Control<MatrixAddType>;
-  name: keyof MatrixAddType;
+  control: Control<TodoAddType>;
+  name: keyof TodoAddType;
   label: string;
   placeholder: string;
   errors?: FieldError;
   errorMessage?: string;
-  rules?: RegisterOptions<MatrixAddType>;
+  rules?: RegisterOptions<TodoAddType>;
   darkMode?: boolean;
 } & TextInputProps;
 
@@ -38,12 +38,14 @@ const Input = ({
         control={control}
         rules={rules}
         render={({ field: { onChange, onBlur, value, ref } }) => {
+          const castingValue = value as string;
+
           return (
-            <AnimatedBorder value={value} error={!!errorMessage}>
+            <AnimatedBorder value={castingValue} error={!!errorMessage}>
               <TextInput
                 placeholder={placeholder}
                 onChangeText={onChange}
-                value={value}
+                value={castingValue}
                 onBlur={onBlur}
                 ref={ref}
                 returnKeyType={returnKeyType}

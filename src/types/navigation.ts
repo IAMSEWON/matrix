@@ -1,4 +1,4 @@
-import { MatrixType } from '@/types/matrix.ts';
+import { MatrixKeyType } from '@/types/matrix.ts';
 
 export type TabStackParamList = {
   HomeStack: undefined;
@@ -12,11 +12,9 @@ export type RootStackParamList = {
 export type HomeStackParamList = {
   Home: undefined;
   MatrixTodo: {
-    matrixType: keyof MatrixType['matrixs'];
+    matrixType: MatrixKeyType;
   };
-  MatrixAdd: {
-    matrixType: keyof MatrixType['matrixs'];
-  };
+  MatrixAdd: undefined;
   Category: undefined;
   Setting: undefined;
 };

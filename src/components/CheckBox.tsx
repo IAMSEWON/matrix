@@ -1,9 +1,7 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, TouchableNativeFeedback } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { Check } from 'lucide-react-native';
-
-import { getContrastYIQ } from '@/utils/color.ts';
 
 interface CheckBoxProps {
   onPress: () => void;
@@ -13,28 +11,29 @@ interface CheckBoxProps {
 
 const CheckBox: React.FC<CheckBoxProps> = ({ backgroundColor = '#f1f3f5', onPress, checked }) => {
   const scale = useSharedValue(1);
-  const animatedBackgroundColor = useSharedValue(backgroundColor);
-
-  const handlePress = () => {
-    onPress();
-  };
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
-    backgroundColor: animatedBackgroundColor.value,
   }));
 
   useEffect(() => {
-    animatedBackgroundColor.value = withTiming(checked ? backgroundColor : '#f1f3f5', { duration: 300 });
-    scale.value = withSpring(0.95, { damping: 2 }, () => {
+    scale.value = withSpring(0.98, { damping: 2 }, () => {
       scale.value = withSpring(1);
     });
   }, [checked]);
 
   return (
-    <TouchableNativeFeedback onPress={handlePress}>
-      <Animated.View style={[styles.checkbox, animatedStyle]}>
-        {checked && <Check size={16} color={getContrastYIQ(backgroundColor)} />}
+    <TouchableNativeFeedback onPress={onPress}>
+      <Animated.View
+        style={[
+          styles.checkbox,
+          animatedStyle,
+          {
+            borderColor: backgroundColor,
+          },
+        ]}
+      >
+        {checked && <Check size={16} color={backgroundColor} />}
       </Animated.View>
     </TouchableNativeFeedback>
   );
@@ -47,6 +46,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 5,
+    borderWidth: 1,
   },
 });
 export default CheckBox;

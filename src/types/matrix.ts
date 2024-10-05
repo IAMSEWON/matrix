@@ -1,34 +1,31 @@
+type YNType = 'Y' | 'N';
+
+// 매트릭스 4분면의 타입
+export type MatrixKeyType = 'doit' | 'schedule' | 'delegate' | 'eliminate';
+
+// 매트릭스 객체 matrixs 타입
+export type MatrixsType = Record<MatrixKeyType, TodoType[]>;
+
+// 할 일 작성 타입
 export type TodoType = {
-  id: number;
+  todoId: number;
   content: string;
   isChecked: boolean;
-  endDate: Date;
-  alram: 'Y' | 'N';
+  endDate?: Date;
+  importance: MatrixKeyType;
+  alram: YNType;
   alramTime?: string;
 };
 
-export type MatrixMenuType = {
-  backgroundColor?: string;
-  contents: TodoType[];
-};
+// 할 일 등록 시 타입
+export type TodoAddType = Omit<TodoType, 'todoId' | 'isChecked'> & { categoryId: number };
 
+// 할 일 등록 시 타입
+export type TodoUpdateType = Omit<TodoType, 'isChecked'> & { categoryId: number };
+
+// 매트릭스 타입
 export type MatrixType = {
-  id: number;
-  category: string;
-  categoryBackgroundColor: string;
-  matrixs: {
-    doit: MatrixMenuType;
-    schedule: MatrixMenuType;
-    delegate: MatrixMenuType;
-    eliminate: MatrixMenuType;
-  };
-};
-
-export type MatrixAddType = {
-  categoryId: string;
-  content: string;
-  alram: 'Y' | 'N';
-  endDate: string;
-  importance: keyof MatrixType['matrixs'];
-  alramTime: string;
+  categoryId: number;
+  categoryName: string;
+  matrixs: TodoType[];
 };

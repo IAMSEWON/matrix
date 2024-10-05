@@ -74,33 +74,33 @@ const CategoryItem = ({
         const title = e.nativeEvent.name;
 
         if (title === '삭제') {
-          if (selectId === item.id) {
+          if (selectId === item.categoryId) {
             Alert.alert('알림', '선택된 카테고리는 삭제할 수 없습니다.');
             return;
           }
 
-          onDelete(item.id);
+          onDelete(item.categoryId);
         }
 
         if (title === '수정') {
-          onModify(item.id);
+          onModify(item.categoryId);
         }
       }}
     >
       <Pressable
-        onPress={() => onSelect(item.id)}
+        onPress={() => onSelect(item.categoryId)}
         className="my-2 h-28 w-full flex-1 justify-between rounded-xl px-3 py-2"
         style={{ backgroundColor: darkMode ? '#333' : '#f1f3f5' }}
       >
         <Text style={{ color: darkMode ? 'white' : 'black' }} className="text-2xl">
-          {item.category}
+          {item.categoryName}
         </Text>
 
         <View className="flex-row" style={{ gap: 12 }}>
-          <MatrixItem count={item.matrixs.doit.contents.length} type="doit" />
-          <MatrixItem count={item.matrixs.schedule.contents.length} type="schedule" />
-          <MatrixItem count={item.matrixs.delegate.contents.length} type="delegate" />
-          <MatrixItem count={item.matrixs.eliminate.contents.length} type="eliminate" />
+          <MatrixItem count={item.matrixs.doit.length} type="doit" />
+          <MatrixItem count={item.matrixs.schedule.length} type="schedule" />
+          <MatrixItem count={item.matrixs.delegate.length} type="delegate" />
+          <MatrixItem count={item.matrixs.eliminate.length} type="eliminate" />
         </View>
       </Pressable>
     </ContextMenu>
@@ -112,7 +112,7 @@ type CategoryNavigationProp = NativeStackNavigationProp<HomeStackParamList, 'Cat
 const Category = ({ navigation }: { navigation: CategoryNavigationProp }) => {
   const { colorScheme } = useColorScheme();
 
-  const { matrix, matrixs, selectMatrix, deleteMatrix } = useMatrixStore();
+  const { matrix, matrixs, selectedMatrix, deletedMatrix } = useMatrixStore();
 
   const [isCategoryForm, setIsCategoryForm] = useState<boolean>(false);
 
@@ -121,7 +121,7 @@ const Category = ({ navigation }: { navigation: CategoryNavigationProp }) => {
   const iconColor = colorScheme === 'light' ? '#1E1F23' : '#fff';
 
   const onSelectMatrix = (id: number) => {
-    selectMatrix(id);
+    selectedMatrix(id);
     navigation.goBack();
   };
 
@@ -158,14 +158,14 @@ const Category = ({ navigation }: { navigation: CategoryNavigationProp }) => {
         <FlashList
           data={matrixs}
           contentInsetAdjustmentBehavior="automatic"
-          keyExtractor={(item) => `${item.id}-${item.category}`}
+          keyExtractor={(item) => `${item.categoryId}-${item.categoryName}`}
           renderItem={({ item }) => (
             <CategoryItem
               item={item}
-              selectId={matrix?.id}
+              selectId={matrix?.categoryId}
               onSelect={onSelectMatrix}
               onModify={onModifyMatrix}
-              onDelete={deleteMatrix}
+              onDelete={deletedMatrix}
               darkMode={colorScheme === 'dark'}
             />
           )}

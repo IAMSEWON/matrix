@@ -8,19 +8,19 @@ import AnimatedBorder from '@/components/Form/AnimatedBorder.tsx';
 import ErrorMessage from '@/components/Form/ErrorMessage.tsx';
 import Label from '@/components/Form/Label.tsx';
 import SheetModal from '@/components/Sheet/SheetModal.tsx';
-import { MatrixAddType } from '@/types/matrix.ts';
+import { TodoAddType } from '@/types/matrix.ts';
 
 type WheelPickerProps = {
   defaultValue?: string;
   label?: string;
-  name: keyof MatrixAddType;
-  control: Control<MatrixAddType>;
+  name: keyof TodoAddType;
+  control: Control<TodoAddType>;
   options: { label: string; value: string }[];
   errors?: FieldError;
   title?: string;
   placeholder: string;
   errorMessage?: string;
-  rules?: RegisterOptions<MatrixAddType>;
+  rules?: RegisterOptions<TodoAddType>;
   darkMode?: boolean;
 };
 
@@ -38,7 +38,7 @@ const WheelPicker = ({
   darkMode,
 }: WheelPickerProps) => {
   const [selectedIndex, setSelectedIndex] = useState<number>(
-    defaultValue ? options.findIndex((option) => option.value === defaultValue) : -1,
+    defaultValue ? options.findIndex((option) => option.value === defaultValue) : 0,
   );
 
   const sheetRef = React.useRef<BottomSheetModal>(null);
@@ -51,8 +51,10 @@ const WheelPicker = ({
         control={control}
         rules={rules}
         render={({ field: { onChange, value } }) => {
+          const castingValue = (value as string).toString();
+
           return (
-            <AnimatedBorder value={value} error={!!errorMessage}>
+            <AnimatedBorder value={castingValue} error={!!errorMessage}>
               <TouchableOpacity
                 onPress={() => {
                   sheetRef.current?.present();
@@ -65,7 +67,7 @@ const WheelPicker = ({
                 }}
               >
                 <Text style={{ fontWeight: 'bold', color: darkMode ? '#fff' : '#1E1F23' }}>
-                  {options.filter((option) => option.value === value)[0]?.label || placeholder}
+                  {options.filter((option) => option.value === castingValue)[0]?.label || placeholder}
                 </Text>
               </TouchableOpacity>
 
@@ -83,9 +85,10 @@ const WheelPicker = ({
               >
                 <Picker
                   data={options}
-                  value={value}
+                  value={castingValue}
                   onValueChanged={({ item }) => {
                     const changedIndex = options.findIndex((option) => option.value === item.value);
+
                     setSelectedIndex(changedIndex);
                   }}
                   itemTextStyle={{ color: darkMode ? '#fff' : '#1E1F23' }}

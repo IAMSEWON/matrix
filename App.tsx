@@ -13,6 +13,8 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const App = (): React.JSX.Element => {
   const [initialRouteName, setInitialRouteName] = useState<keyof RootStackParamList>('Main');
 
+  // const { resetMatrixs } = useMatrixStore();
+
   const onCheckGuide = async () => {
     const guideKey = await getData('guideKey');
 

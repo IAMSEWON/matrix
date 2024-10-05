@@ -50,24 +50,30 @@ export const onCheckNotificationPermission = async () => {
   }
 };
 
-export const onCreateTriggerNotification = async () => {
-  const date = new Date(Date.now());
-  date.setHours(11);
-  date.setMinutes(10);
-
-  // Create a time-based trigger
+export const onCreateTriggerNotification = async ({
+  id,
+  time,
+  title,
+  body,
+}: {
+  id: string;
+  time: Date;
+  title: string;
+  body: string;
+}) => {
+  // 알람 시간 설정
   const trigger: TimestampTrigger = {
     type: TriggerType.TIMESTAMP,
-    timestamp: date.getTime(), // fire at 11:10am (10 minutes before meeting)
+    timestamp: time.getTime(), // fire at 11:10am (10 minutes before meeting)
   };
-
-  // Create a trigger notification
+  // 푸시 트리거 알람 생성
   await notifee.createTriggerNotification(
     {
-      title: 'Meeting with Jane',
-      body: 'Today at 11:20am',
+      id,
+      title,
+      body,
       android: {
-        channelId: 'your-channel-id',
+        channelId: id,
       },
     },
     trigger,

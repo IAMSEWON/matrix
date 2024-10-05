@@ -5,7 +5,6 @@ import { TodoType } from '@/types/matrix.ts';
 import { cn } from '@/utils/tailwind.ts';
 
 type MartixType = {
-  backgroundColor?: string;
   onPress: () => void;
   contents?: TodoType[];
 };
@@ -39,12 +38,12 @@ const MatrixLayout = (props: MatrixLayoutProps) => {
           onPress={() => doit.onPress()}
           className={cn(defaultMatrixStyle)}
           style={{
-            backgroundColor: doit.backgroundColor || defaultMatrixBackgroundColor,
+            backgroundColor: defaultMatrixBackgroundColor,
           }}
         >
           {doit.contents?.map((content) => {
             return (
-              <View key={content.id}>
+              <View key={content.todoId}>
                 <Text className="text-black">{content.content}</Text>
               </View>
             );
@@ -54,12 +53,12 @@ const MatrixLayout = (props: MatrixLayoutProps) => {
           onPress={() => schedule.onPress()}
           className={cn(defaultMatrixStyle)}
           style={{
-            backgroundColor: schedule.backgroundColor || defaultMatrixBackgroundColor,
+            backgroundColor: defaultMatrixBackgroundColor,
           }}
         >
           {schedule.contents?.map((content) => {
             return (
-              <View key={content.id}>
+              <View key={content.todoId}>
                 <Text className="text-black">{content.content}</Text>
               </View>
             );
@@ -72,12 +71,12 @@ const MatrixLayout = (props: MatrixLayoutProps) => {
           onPress={() => delegate.onPress()}
           className={cn(defaultMatrixStyle)}
           style={{
-            backgroundColor: delegate.backgroundColor || defaultMatrixBackgroundColor,
+            backgroundColor: defaultMatrixBackgroundColor,
           }}
         >
           {delegate.contents?.map((content) => {
             return (
-              <View key={content.id}>
+              <View key={content.todoId}>
                 <Text className="text-black">{content.content}</Text>
               </View>
             );
@@ -87,12 +86,12 @@ const MatrixLayout = (props: MatrixLayoutProps) => {
           onPress={() => eliminate.onPress()}
           className={cn(defaultMatrixStyle)}
           style={{
-            backgroundColor: eliminate.backgroundColor || defaultMatrixBackgroundColor,
+            backgroundColor: defaultMatrixBackgroundColor,
           }}
         >
           {eliminate.contents?.map((content) => {
             return (
-              <View key={content.id}>
+              <View key={content.todoId}>
                 <Text className="text-black">{content.content}</Text>
               </View>
             );

@@ -28,7 +28,7 @@ interface IProps {
   PAST_SCROLL_RANGE: number;
 }
 
-const CALENDAR_WIDTH = Dimensions.get('screen').width - 16;
+export const CALENDAR_WIDTH = Dimensions.get('screen').width - 16;
 const CalendarList = ({
   currentDate,
   setCurrentDate,

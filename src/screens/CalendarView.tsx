@@ -60,7 +60,7 @@ const CalendarView = () => {
 
   return (
     <View className="flex-1 bg-white">
-      <Layout>
+      <Layout className="flex-[none]">
         <View style={{ paddingTop: insets.top }}>
           <CalendarList
             currentDate={currentDate}
@@ -73,7 +73,7 @@ const CalendarView = () => {
           />
         </View>
       </Layout>
-      <CalendarTodo />
+      <CalendarTodo currentDate={currentDate} setCurrentDate={setCurrentDate} />
     </View>
   );
 };

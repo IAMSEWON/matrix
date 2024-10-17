@@ -19,9 +19,12 @@ const CalendarTodo = (props: ICalendarTodoProps) => {
   const { currentDate } = props;
 
   const [items, setItems] = React.useState<ICalendarTotoItem[]>([]);
+  const [isFetching, setIsFetching] = React.useState<boolean>(false);
 
-  const initDates = () => {
-    const dateCount = dayjs(currentDate).daysInMonth();
+  // 한달 간격의 일자 데이터 배열 생성 및 추가
+  const initDates = (date?: Date) => {
+    setIsFetching(true); // 맨위 스크롤 시 중복 실행 방지
+    const dateCount = dayjs(date ?? currentDate).daysInMonth();
     const item: {
       [key: string]: ({
         categoryId: number;
@@ -29,38 +32,81 @@ const CalendarTodo = (props: ICalendarTodoProps) => {
       } & TodoType)[];
     } = {};
     for (let i = 1; i <= dateCount; i++) {
-      const date = dayjs(currentDate).set('date', i).format('YYYY-MM-DD');
-      item[date] = [];
+      const dateKey = dayjs(date ?? currentDate)
+        .set('date', i)
+        .format('YYYY-MM-DD');
+      item[dateKey] = [];
     }
     const matrixsFlat = matrixs.flat(Infinity);
     matrixsFlat.forEach((m) => {
       const matrix = m.matrixs;
-      Object.keys(matrix).forEach((k) => {
-        if (matrix[k].contents.length > 0) {
-          matrix[k].contents.forEach((c: TodoType) => {
-            const date = dayjs(c.endDate).format('YYYY-MM-DD');
-            item[date] = [
-              ...item[date],
+      if (matrix.length > 0) {
+        matrix.forEach((c: TodoType) => {
+          const itemDate = dayjs(c.endDate).format('YYYY-MM-DD');
+          if (Object.keys(item).indexOf(itemDate) !== -1) {
+            item[itemDate] = [
+              ...item[itemDate],
               {
-                categoryId: m.id,
-                matrixKey: k,
+                categoryId: m.categoryId,
+                matrixKey: c.importance,
                 ...c,
               },
             ];
-          });
-        }
-      });
+          }
+        });
+      }
     });
+    const isPrev =
+      items.length > 0 &&
+      dayjs(date ?? currentDate)
+        .clone()
+        .format('YYYYMMDD') < dayjs(items[0].date).clone().format('YYYYMMDD');
     const formatItem: ICalendarTotoItem[] = [];
     Object.entries(item).forEach((value) => {
       formatItem.push({ date: dayjs(value[0]).toDate(), contents: value[1] });
     });
-    setItems(formatItem);
+    setItems((prev) => (isPrev ? [...formatItem, ...prev] : [...prev, ...formatItem]));
+    if (isPrev) {
+      scrollRef?.current?.scrollToIndex({ animated: true, index: dateCount });
+    }
+    setTimeout(() => {
+      setIsFetching(false);
+    }, 500);
   };
 
   React.useEffect(() => {
     initDates();
   }, []);
+
+  // 맨위 스크롤 도달 시 기존 데이터 앞에 일자 배열 추가
+  const onStartReached = () => {
+    if (items.length > 0 && isFetching === false) {
+      const firstDate = items[0]?.date;
+      const prevMonth = dayjs(firstDate).subtract(1, 'M').toDate();
+      initDates(prevMonth);
+    }
+  };
+  // 맨아래 스크롤 도달 시 기존 데이터 뒤에 일자 배열 추가
+  const onEndReached = () => {
+    if (items.length > 0 && isFetching === false) {
+      const lastDate = items[items.length - 1]?.date;
+      const nextMonth = dayjs(lastDate).add(1, 'd').toDate();
+      initDates(nextMonth);
+    }
+  };
+
+  // 달력에서 일자를 변경한 경우
+  React.useEffect(() => {
+    const currentDateIndex = items.findIndex(
+      (i) => dayjs(i.date).format('YYYYMMDD') === dayjs(currentDate).format('YYYYMMDD'),
+    );
+    // 현재 생성된 일자배열에 해당 날짜가 있는 경우 scroll만
+    if (currentDateIndex !== -1) {
+      scrollRef?.current?.scrollToIndex({ animated: true, index: currentDateIndex });
+    } else {
+      // 없는 경우 해당 월까지 배열 생성하고 scroll
+    }
+  }, [currentDate]);
 
   // const onMomentumScrollEnd = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
   //   console.log('onMomentumScrollEnd', e.nativeEvent);
@@ -71,13 +117,6 @@ const CalendarTodo = (props: ICalendarTodoProps) => {
   // }) => {
   //   console.log('onViewableItemsChanged', info.viewableItems[0]);
   // };
-
-  const onStartReached = () => {
-    // console.log('onStartReached');
-  };
-  const onEndReached = () => {
-    // console.log('onEndReached');
-  };
 
   const RenderItem = React.useCallback(
     ({ item }: { item: ICalendarTotoItem }) => {
@@ -157,7 +196,7 @@ const CalendarTodo = (props: ICalendarTodoProps) => {
           // onMomentumScrollEnd={onMomentumScrollEnd}
           // onViewableItemsChanged={onViewableItemsChanged}
           viewabilityConfig={{
-            viewAreaCoveragePercentThreshold: 100,
+            itemVisiblePercentThreshold: 100,
           }}
           onStartReached={onStartReached}
           onStartReachedThreshold={0.7}

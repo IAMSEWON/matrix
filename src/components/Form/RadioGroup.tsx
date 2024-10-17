@@ -7,6 +7,8 @@ import ErrorMessage from '@/components/Form/ErrorMessage.tsx';
 import Label from '@/components/Form/Label.tsx';
 import { TodoAddType } from '@/types/matrix.ts';
 
+import ImportanceSquare from '../ImportanceSquare';
+
 type RadioGroupProps = {
   control: Control<TodoAddType>;
   name: keyof TodoAddType;
@@ -18,43 +20,6 @@ type RadioGroupProps = {
   rules?: RegisterOptions<TodoAddType>;
   darkMode?: boolean;
   defaultValue?: string;
-};
-
-const matrixData = ['doit', 'schedule', 'delegate', 'eliminate'];
-
-const MatrixItem = ({ value }: { value: string }) => {
-  return (
-    <View className="flex-1 items-center justify-center">
-      <View className="flex-row gap-1">
-        <View
-          className="h-3 w-3 rounded bg-gray-300"
-          style={{
-            backgroundColor: value === matrixData[0] ? '#007bff' : '#e0f3ff',
-          }}
-        />
-        <View
-          className="h-3 w-3 rounded bg-gray-300"
-          style={{
-            backgroundColor: value === matrixData[1] ? '#007bff' : '#e0f3ff',
-          }}
-        />
-      </View>
-      <View className="flex-row gap-1 pt-1">
-        <View
-          className="h-3 w-3 rounded bg-gray-300"
-          style={{
-            backgroundColor: value === matrixData[2] ? '#007bff' : '#e0f3ff',
-          }}
-        />
-        <View
-          className="h-3 w-3 rounded bg-gray-300"
-          style={{
-            backgroundColor: value === matrixData[3] ? '#007bff' : '#e0f3ff',
-          }}
-        />
-      </View>
-    </View>
-  );
 };
 
 const RadioGroup = ({
@@ -90,7 +55,7 @@ const RadioGroup = ({
                     }}
                   >
                     {type === 'MATRIX' ? (
-                      <MatrixItem value={option.value} />
+                      <ImportanceSquare value={option.value} />
                     ) : (
                       <Text
                         style={{

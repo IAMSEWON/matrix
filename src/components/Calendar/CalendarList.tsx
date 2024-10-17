@@ -1,14 +1,22 @@
 import React from 'react';
-import { ActivityIndicator, Dimensions, FlatList, Text, TouchableOpacity, View, ViewToken } from 'react-native';
+import {
+  ActivityIndicator,
+  Dimensions,
+  FlatList,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import dayjs from 'dayjs';
 import findIndex from 'lodash/findIndex';
 import { SquareChevronLeft, SquareChevronRight } from 'lucide-react-native';
 
 import { CalendarType } from '@/constants';
-import { sameDate, sameMonth } from '@/utils/date';
 
-import CalendarItem from './CalendarItem';
+import ListItem from './ListItem';
 
 interface IProps {
   currentDate: Date;
@@ -20,9 +28,7 @@ interface IProps {
   PAST_SCROLL_RANGE: number;
 }
 
-const CALENDAR_WIDTH = Dimensions.get('screen').width - 16;
-let onViewableItemsChangedTimeOut: NodeJS.Timeout | null = null;
-let visibleDateTypeChangedTimeOut: NodeJS.Timeout | null = null;
+export const CALENDAR_WIDTH = Dimensions.get('screen').width - 16;
 const CalendarList = ({
   currentDate,
   setCurrentDate,
@@ -33,15 +39,18 @@ const CalendarList = ({
   PAST_SCROLL_RANGE,
 }: IProps) => {
   const visibleDate = React.useRef(dayjs(currentDate));
-  const visibleDateType = React.useRef('month');
   const [refreshing] = React.useState<boolean>(false);
+  const [isScrolling, setIsScrolling] = React.useState<boolean>(false);
 
   const onPressDay = React.useCallback(
     (date: Date) => {
+      if (calendarType === 'month') {
+        setIsScrolling(true);
+      }
       handleChangeDate(date);
       scrollToCurrent(date);
     },
-    [calendarType, currentDate],
+    [calendarType, currentDate, isScrolling],
   );
   const changePrevMonth = React.useCallback(() => {
     let prev = new Date();
@@ -65,48 +74,6 @@ const CalendarList = ({
     handleChangeDate(next);
     scrollToCurrent(next);
   }, [calendarType, currentDate]);
-
-  const onViewableItemsChanged = React.useCallback(
-    ({ viewableItems }: { viewableItems: Array<ViewToken<string>> }) => {
-      if (items.length === 0) return;
-      if (calendarType !== visibleDateType.current) {
-        if (visibleDateTypeChangedTimeOut) clearTimeout(visibleDateTypeChangedTimeOut);
-        visibleDateTypeChangedTimeOut = setTimeout(() => {
-          visibleDateType.current = calendarType;
-        }, 500);
-        return;
-      }
-
-      const newVisibleDate = dayjs(viewableItems[0]?.item);
-      const sameCheck =
-        calendarType === 'month'
-          ? sameMonth(visibleDate?.current.toDate(), newVisibleDate.toDate())
-          : sameDate(visibleDate?.current.toDate(), newVisibleDate.toDate());
-      if (!sameCheck) {
-        if (onViewableItemsChangedTimeOut) clearTimeout(onViewableItemsChangedTimeOut);
-        onViewableItemsChangedTimeOut = setTimeout(() => {
-          let changeDate = new Date();
-
-          if (calendarType === 'month') {
-            changeDate = dayjs(newVisibleDate).clone().date(1).toDate();
-          } else {
-            const firstDay = dayjs(newVisibleDate).startOf('week');
-            if (firstDay.month() !== newVisibleDate.month()) {
-              changeDate = firstDay.toDate();
-            } else {
-              changeDate = dayjs(newVisibleDate)
-                .clone()
-                .date(dayjs(newVisibleDate).clone().startOf('week').date())
-                .toDate();
-            }
-          }
-          visibleDate.current = newVisibleDate;
-          handleChangeDate(changeDate);
-        }, 200);
-      }
-    },
-    [calendarType, items],
-  );
 
   const handleChangeDate = React.useCallback(
     (date: Date) => {
@@ -133,13 +100,24 @@ const CalendarList = ({
         });
       }
     },
-    [calendarType, currentDate, initialDate],
+    [calendarType, currentDate, initialDate, isScrolling],
   );
+
+  const onMomentumScrollEnd = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    if (isScrolling) {
+      setIsScrolling(false);
+    } else {
+      const contentOffsetx = e.nativeEvent.contentOffset.x;
+      const index = Math.floor(contentOffsetx / CALENDAR_WIDTH);
+      const newDate = dayjs(items[index]).startOf(calendarType).toDate();
+      setCurrentDate(newDate);
+    }
+  };
 
   const renderItem = React.useCallback(
     (props: { item: string }) => {
       return (
-        <CalendarItem
+        <ListItem
           date={props.item}
           currentDate={currentDate}
           onPressDay={onPressDay}
@@ -211,10 +189,9 @@ const CalendarList = ({
         keyExtractor={keyExtractor}
         initialNumToRender={1}
         initialScrollIndex={Math.max(initialDateIndex, 0)}
-        viewabilityConfig={{
-          viewAreaCoveragePercentThreshold: 20,
-        }}
-        onViewableItemsChanged={onViewableItemsChanged}
+        scrollEventThrottle={16}
+        decelerationRate="fast"
+        onMomentumScrollEnd={onMomentumScrollEnd}
         getItemLayout={getItemLayout}
         maxToRenderPerBatch={3}
         windowSize={11}

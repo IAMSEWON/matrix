@@ -1,9 +1,10 @@
 import React from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import dayjs from 'dayjs';
 
 import CalendarList from '@/components/Calendar/CalendarList';
+import CalendarTodo from '@/components/Calendar/CalendarTodo';
 import Layout from '@/components/Layout/Layout.tsx';
 import { CalendarType } from '@/constants';
 
@@ -58,22 +59,22 @@ const CalendarView = () => {
   }, [items, calendarType, currentDate]);
 
   return (
-    <Layout>
-      <View style={{ paddingTop: insets.top }}>
-        <CalendarList
-          currentDate={currentDate}
-          setCurrentDate={setCurrentDate}
-          initialDate={initialDate}
-          calendarType={calendarType}
-          setCalendarType={setCalendarType}
-          items={items}
-          PAST_SCROLL_RANGE={PAST_SCROLL_RANGE}
-        />
-      </View>
-      <View>
-        <Text>ejiowjoefwi</Text>
-      </View>
-    </Layout>
+    <View className="flex-1 bg-white">
+      <Layout className="flex-[none]">
+        <View style={{ paddingTop: insets.top }}>
+          <CalendarList
+            currentDate={currentDate}
+            setCurrentDate={setCurrentDate}
+            initialDate={initialDate}
+            calendarType={calendarType}
+            setCalendarType={setCalendarType}
+            items={items}
+            PAST_SCROLL_RANGE={PAST_SCROLL_RANGE}
+          />
+        </View>
+      </Layout>
+      <CalendarTodo currentDate={currentDate} setCurrentDate={setCurrentDate} />
+    </View>
   );
 };
 

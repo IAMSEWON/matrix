@@ -6,7 +6,7 @@ import { useColorScheme } from 'nativewind';
 
 type AnimatedBorderProps = {
   children: React.ReactNode;
-  value: string;
+  value?: string;
   error?: boolean;
   style?: StyleProp<ViewStyle>;
 };

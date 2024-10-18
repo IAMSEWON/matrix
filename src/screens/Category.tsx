@@ -97,10 +97,10 @@ const CategoryItem = ({
         </Text>
 
         <View className="flex-row" style={{ gap: 12 }}>
-          <MatrixItem count={item.matrixs.doit.length} type="doit" />
-          <MatrixItem count={item.matrixs.schedule.length} type="schedule" />
-          <MatrixItem count={item.matrixs.delegate.length} type="delegate" />
-          <MatrixItem count={item.matrixs.eliminate.length} type="eliminate" />
+          <MatrixItem count={item.matrixs.filter((todo) => todo.importance === 'doit').length} type="doit" />
+          <MatrixItem count={item.matrixs.filter((todo) => todo.importance === 'schedule').length} type="schedule" />
+          <MatrixItem count={item.matrixs.filter((todo) => todo.importance === 'delegate').length} type="delegate" />
+          <MatrixItem count={item.matrixs.filter((todo) => todo.importance === 'eliminate').length} type="eliminate" />
         </View>
       </Pressable>
     </ContextMenu>

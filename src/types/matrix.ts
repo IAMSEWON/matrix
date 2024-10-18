@@ -11,6 +11,7 @@ export type TodoType = {
   todoId: number;
   content: string;
   isChecked: boolean;
+  startDate?: Date;
   endDate?: Date;
   importance: MatrixKeyType;
   alram: YNType;

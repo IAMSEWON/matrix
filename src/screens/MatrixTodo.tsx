@@ -3,14 +3,20 @@ import { Pressable, Text, View } from 'react-native';
 import ContextMenu from 'react-native-context-menu-view';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import dayjs from 'dayjs';
+import { Timer } from 'lucide-react-native';
 import { useColorScheme } from 'nativewind';
 
 import FadeInFadeOut from '@/components/Animation/FadeInOut.tsx';
 import CheckBox from '@/components/CheckBox.tsx';
 import Layout from '@/components/Layout/Layout.tsx';
+import { alramTimeOptions } from '@/data/time.ts';
 import useMatrixStore from '@/stores/matrix.ts';
 import { useMatrixAdd } from '@/stores/matrixAdd.ts';
 import { HomeStackParamList } from '@/types/navigation.ts';
+
+import 'dayjs/locale/ko';
+
+dayjs.locale('ko');
 
 type MatrixTodoNavigationProp = NativeStackScreenProps<HomeStackParamList, 'MatrixTodo'>;
 
@@ -96,27 +102,44 @@ const MatrixTodo = ({ route }: MatrixTodoNavigationProp) => {
                   </View>
                   <Pressable onPress={() => {}} key={item.todoId} className="flex-row items-center" style={{ gap: 8 }}>
                     <Text
-                      className="px-1 py-0.5 text-xs"
+                      className="items-center overflow-hidden rounded px-1 py-0.5 text-xs"
                       style={{
                         borderRadius: 4,
-                        overflow: 'hidden',
                         backgroundColor,
                         color,
                       }}
                     >
-                      {dayjs(item.endDate).format('MM.DD')}
+                      {dayjs(item.endDate).format('MM월 DD일')}
                     </Text>
                     <Text
-                      className="px-1 py-0.5 text-xs"
+                      className="items-center overflow-hidden rounded px-1 py-0.5 text-xs"
                       style={{
                         borderRadius: 4,
-                        overflow: 'hidden',
                         backgroundColor,
                         color,
                       }}
                     >
-                      {dayjs(item.endDate).format('HH:mmA')}
+                      {dayjs(item.endDate).format('A HH:mm')}
                     </Text>
+                    <View
+                      className="flex-row overflow-hidden rounded px-1 py-0.5 text-xs"
+                      style={{
+                        borderRadius: 4,
+                        backgroundColor,
+                        gap: 2,
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Timer size={12} color={color} className="" />
+                      <Text
+                        className="text-xs"
+                        style={{
+                          color,
+                        }}
+                      >
+                        {alramTimeOptions.find((option) => option.value === item.alramTime)?.label}
+                      </Text>
+                    </View>
                   </Pressable>
                 </View>
               </FadeInFadeOut>

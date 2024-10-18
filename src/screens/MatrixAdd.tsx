@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { Alert, Platform, Pressable, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import dayjs from 'dayjs';
+import duration from 'dayjs/plugin/duration';
 import { SquarePlus } from 'lucide-react-native';
 import { useColorScheme } from 'nativewind';
 
@@ -13,11 +14,14 @@ import Input from '@/components/Form/Input.tsx';
 import RadioGroup from '@/components/Form/RadioGroup.tsx';
 import WheelPicker from '@/components/Form/WheelPicker.tsx';
 import { ALRAM_TIME } from '@/constants.ts';
+import { alramTimeOptions } from '@/data/time.ts';
 import useMatrixStore from '@/stores/matrix.ts';
 import { useMatrixAdd } from '@/stores/matrixAdd.ts';
-import { TodoAddType } from '@/types/matrix.ts';
+import { TodoAddType, TodoUpdateType } from '@/types/matrix.ts';
 import { HomeStackParamList } from '@/types/navigation.ts';
-import { onCreateTriggerNotification } from '@/utils/notifications.ts';
+import { onCreateTriggerNotification, onRemoveNotification } from '@/utils/notifications.ts';
+
+dayjs.extend(duration);
 
 type MatrixAddNavigationProp = NativeStackScreenProps<HomeStackParamList, 'MatrixAdd'>;
 
@@ -31,7 +35,7 @@ const resetTodoValue: TodoAddType = {
   alramTime: undefined,
 };
 
-const MatrixAdd = ({ route, navigation }: MatrixAddNavigationProp) => {
+const MatrixAdd = ({ navigation }: MatrixAddNavigationProp) => {
   const { isVisibleMatrixAdd, setIsVisibleMatrixAdd, matrixType, editMatrix, setEditMatrix } = useMatrixAdd();
 
   const [isVisibleCategory, setIsVisibleCategory] = useState<boolean>(false);
@@ -47,16 +51,15 @@ const MatrixAdd = ({ route, navigation }: MatrixAddNavigationProp) => {
     setValue,
     reset,
     watch,
+    trigger,
   } = useForm<TodoAddType>({
     defaultValues: resetTodoValue,
+    mode: 'onChange',
   });
 
   const onPressIconHandler = () => {
     if (matrixs.length === 0) {
-      Alert.alert('카테고리를 먼저 추가해주세요.', '', [
-        { text: '취소', onPress: () => null },
-        { text: '카테고리 추가', onPress: () => setIsVisibleCategory(true) },
-      ]);
+      setIsVisibleCategory(true);
     } else if (!matrix) {
       Alert.alert('카테고리를 선택해주세요.', '', [
         { text: '취소', onPress: () => null },
@@ -80,45 +83,43 @@ const MatrixAdd = ({ route, navigation }: MatrixAddNavigationProp) => {
   const onTriggerTodoHandler = async (id: string, todo: Omit<TodoAddType, 'todoId'>) => {
     const { alram, alramTime, endDate, content } = todo;
 
-    // 알람 시간이 설정되었을 경우 푸시 알람 보내기
-    if (alram === 'Y' && alramTime) {
-      // 알람 시간
-      const todoAlramTime = parseInt(alramTime, 10);
+    if (alram !== 'Y' || !alramTime) return;
 
-      // 마감 시간
-      const todoEndDate = dayjs(endDate).subtract(todoAlramTime, 'minute').toDate();
+    const todoAlramTime = parseInt(alramTime, 10);
+    const todoEndDate = dayjs(endDate).subtract(todoAlramTime, 'minute').toDate();
 
-      // 메세지
-      const body =
-        (alramTime as keyof typeof ALRAM_TIME) === '0'
-          ? '마감되었습니다.'
-          : `마감 ${ALRAM_TIME[alramTime as keyof typeof ALRAM_TIME]} 전 입니다.`;
+    const body =
+      alramTime === '0' ? '마감되었습니다.' : `마감 ${ALRAM_TIME[alramTime as keyof typeof ALRAM_TIME]} 입니다.`;
 
-      await onCreateTriggerNotification({
-        id,
-        time: todoEndDate,
-        title: `${content}가`,
-        body: `${body}`,
-      });
-    }
+    await onCreateTriggerNotification({
+      id,
+      time: todoEndDate,
+      title: `${content}가`,
+      body,
+    });
   };
 
   const onSubmitHandler = async (data: TodoAddType) => {
-    // 알람 설정 체크되어있는데 알람 시간을 미체크했을 경우 경고
     if (data.alram === 'Y' && !data.alramTime) {
       Alert.alert('알람 시간을 선택해주세요.');
       return;
     }
 
-    await onTriggerTodoHandler(`${matrix?.categoryId}-${data.categoryId}`, { ...data });
+    // 수정 시 todoId 값 추가
+    const todoData: TodoAddType | TodoUpdateType = editMatrix ? { ...data, todoId: editMatrix.todoId } : { ...data };
 
     if (editMatrix) {
-      updatedTodo({
-        ...data,
-        todoId: editMatrix.todoId,
-      });
+      updatedTodo(todoData as TodoUpdateType);
+
+      if (data.alram === 'N' || data.endDate !== editMatrix.endDate || data.alramTime !== editMatrix.alramTime) {
+        await onRemoveNotification(`${matrix?.categoryId}-${editMatrix.todoId}`);
+        if (data.alram === 'Y') {
+          await onTriggerTodoHandler(`${matrix?.categoryId}-${data.categoryId}`, { ...data });
+        }
+      }
     } else {
-      createdTodo(data);
+      const todoId = createdTodo(data);
+      await onTriggerTodoHandler(`${data?.categoryId}-${todoId}`, { ...data });
     }
 
     setIsVisibleMatrixAdd(false);
@@ -146,6 +147,8 @@ const MatrixAdd = ({ route, navigation }: MatrixAddNavigationProp) => {
       if (editMatrix.endDate !== undefined) setValue('endDate', editMatrix.endDate);
       if (editMatrix.alram !== undefined) setValue('alram', editMatrix.alram);
       if (editMatrix.alramTime !== undefined) setValue('alramTime', editMatrix.alramTime);
+
+      trigger();
     }
   }, [matrixType, editMatrix, isVisibleMatrixAdd]);
 
@@ -217,6 +220,8 @@ const MatrixAdd = ({ route, navigation }: MatrixAddNavigationProp) => {
             required: '마감 날짜/시간을 선택해주세요.',
             validate: {
               isDate: (value) => !Number.isNaN(Date.parse(value as string)) || '유효한 날짜를 입력해주세요.',
+              isFiveMinutesLater: (value) =>
+                dayjs(value).isAfter(dayjs().add(4, 'minute')) || '현재 시간보다 5분 이상 차이가 나야합니다.',
             },
           }}
           darkMode={colorScheme === 'dark'}
@@ -239,16 +244,7 @@ const MatrixAdd = ({ route, navigation }: MatrixAddNavigationProp) => {
         />
         {watch().alram === 'Y' && (
           <WheelPicker
-            options={[
-              { label: '마감 시간', value: '0' },
-              { label: '5분 전', value: '5' },
-              { label: '10분 전', value: '10' },
-              { label: '15분 전', value: '15' },
-              { label: '30분 전', value: '30' },
-              { label: '1시간 전', value: '60' },
-              { label: '2시간 전', value: '120' },
-              { label: '1일 전', value: '1440' },
-            ]}
+            options={alramTimeOptions}
             control={control}
             name="alramTime"
             title="알림 시간 선택"
@@ -259,6 +255,7 @@ const MatrixAdd = ({ route, navigation }: MatrixAddNavigationProp) => {
             rules={{
               required: '알림 시간을 선택해주세요.',
             }}
+            defaultValue={alramTimeOptions.find((item) => item.value === watch().alramTime)?.value}
           />
         )}
       </Form>

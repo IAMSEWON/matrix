@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import { Plus } from 'lucide-react-native';
 
 import useMatrixStore from '@/stores/matrix';
+import { useMatrixAdd } from '@/stores/matrixAdd';
 import { TodoType } from '@/types/matrix';
 import { getDayText } from '@/utils/date';
 
@@ -17,25 +18,45 @@ interface ICalendarTodoProps {
 const CalendarTodo = (props: ICalendarTodoProps) => {
   const { matrixs } = useMatrixStore();
   const { currentDate } = props;
+  const { setIsVisibleMatrixAdd } = useMatrixAdd();
 
   const [items, setItems] = React.useState<ICalendarTotoItem[]>([]);
   const [isFetching, setIsFetching] = React.useState<boolean>(false);
 
   // 한달 간격의 일자 데이터 배열 생성 및 추가
-  const initDates = (date?: Date) => {
+  const initDates = (date?: Date, scrollType?: 'reset' | 'current') => {
     setIsFetching(true); // 맨위 스크롤 시 중복 실행 방지
-    const dateCount = dayjs(date ?? currentDate).daysInMonth();
+    const targetDate = dayjs(date ?? currentDate);
+    const isPrev =
+      items.length > 0 &&
+      dayjs(targetDate).clone().format('YYYYMMDD') < dayjs(items[0].date).clone().format('YYYYMMDD');
+    let dateCount = 0;
+    let scrollIndex: number | null = null;
+    if (items.length === 0) {
+      dateCount = dayjs(targetDate).daysInMonth();
+    } else {
+      const standardDate = isPrev ? items[0].date : items[items.length - 1].date;
+      dateCount = Math.abs(targetDate.diff(dayjs(standardDate), 'day'));
+      if (scrollType === 'reset') scrollIndex = dateCount;
+    }
     const item: {
       [key: string]: ({
         categoryId: number;
         matrixKey: string;
       } & TodoType)[];
     } = {};
-    for (let i = 1; i <= dateCount; i++) {
-      const dateKey = dayjs(date ?? currentDate)
-        .set('date', i)
-        .format('YYYY-MM-DD');
-      item[dateKey] = [];
+    if (isPrev || items.length === 0) {
+      for (let i = 0; i < dateCount; i++) {
+        const dateKey = dayjs(targetDate).add(i, 'day').format('YYYY-MM-DD');
+        item[dateKey] = [];
+      }
+    } else {
+      for (let i = 1; i <= dateCount; i++) {
+        const dateKey = dayjs(items[items.length - 1].date)
+          .add(i, 'day')
+          .format('YYYY-MM-DD');
+        item[dateKey] = [];
+      }
     }
     const matrixsFlat = matrixs.flat(Infinity);
     matrixsFlat.forEach((m) => {
@@ -56,18 +77,22 @@ const CalendarTodo = (props: ICalendarTodoProps) => {
         });
       }
     });
-    const isPrev =
-      items.length > 0 &&
-      dayjs(date ?? currentDate)
-        .clone()
-        .format('YYYYMMDD') < dayjs(items[0].date).clone().format('YYYYMMDD');
     const formatItem: ICalendarTotoItem[] = [];
     Object.entries(item).forEach((value) => {
       formatItem.push({ date: dayjs(value[0]).toDate(), contents: value[1] });
     });
-    setItems((prev) => (isPrev ? [...formatItem, ...prev] : [...prev, ...formatItem]));
-    if (isPrev) {
-      scrollRef?.current?.scrollToIndex({ animated: true, index: dateCount });
+    const resultArr = isPrev ? [...formatItem, ...items] : [...items, ...formatItem];
+    setItems(resultArr);
+    if (scrollType === 'current') {
+      const index = resultArr.findIndex(
+        (i) => dayjs(i.date).format('YYYYMMDD') === dayjs(currentDate).format('YYYYMMDD'),
+      );
+      scrollIndex = index === -1 ? null : index - 1;
+    }
+    if (scrollIndex !== null) {
+      setTimeout(() => {
+        scrollRef?.current?.scrollToIndex({ animated: true, index: scrollIndex });
+      }, 100);
     }
     setTimeout(() => {
       setIsFetching(false);
@@ -75,28 +100,31 @@ const CalendarTodo = (props: ICalendarTodoProps) => {
   };
 
   React.useEffect(() => {
-    initDates();
-  }, []);
+    initDates(dayjs().set('date', 1).toDate());
+  }, [matrixs]);
 
   // 맨위 스크롤 도달 시 기존 데이터 앞에 일자 배열 추가
   const onStartReached = () => {
     if (items.length > 0 && isFetching === false) {
       const firstDate = items[0]?.date;
       const prevMonth = dayjs(firstDate).subtract(1, 'M').toDate();
-      initDates(prevMonth);
+      initDates(prevMonth, 'reset');
     }
   };
   // 맨아래 스크롤 도달 시 기존 데이터 뒤에 일자 배열 추가
   const onEndReached = () => {
     if (items.length > 0 && isFetching === false) {
       const lastDate = items[items.length - 1]?.date;
-      const nextMonth = dayjs(lastDate).add(1, 'd').toDate();
-      initDates(nextMonth);
+      const nextDay = dayjs(lastDate).clone().add(1, 'd');
+      const nextMonthCount = nextDay.daysInMonth();
+      const nextMonthLast = dayjs(nextDay).clone().set('date', nextMonthCount).format('YYYY-MM-DD');
+      initDates(new Date(nextMonthLast));
     }
   };
 
   // 달력에서 일자를 변경한 경우
   React.useEffect(() => {
+    if (items.length === 0) return;
     const currentDateIndex = items.findIndex(
       (i) => dayjs(i.date).format('YYYYMMDD') === dayjs(currentDate).format('YYYYMMDD'),
     );
@@ -105,6 +133,12 @@ const CalendarTodo = (props: ICalendarTodoProps) => {
       scrollRef?.current?.scrollToIndex({ animated: true, index: currentDateIndex });
     } else {
       // 없는 경우 해당 월까지 배열 생성하고 scroll
+      const isPrev = dayjs(currentDate).format('YYYYMMDD') < dayjs(items[0].date).clone().format('YYYYMMDD');
+      const currentMonthLastDay = dayjs(currentDate).daysInMonth();
+      const formatCurrentDate = dayjs(currentDate)
+        .clone()
+        .set('date', isPrev ? 1 : currentMonthLastDay);
+      initDates(formatCurrentDate.toDate(), 'current');
     }
   }, [currentDate]);
 
@@ -122,17 +156,7 @@ const CalendarTodo = (props: ICalendarTodoProps) => {
     ({ item }: { item: ICalendarTotoItem }) => {
       const isToday = dayjs().format('YYYYMMDD') === dayjs(item.date).format('YYYYMMDD');
       return (
-        <View
-          className="border-b-[1px] border-b-gray-300 px-[20px] py-[10px]"
-          style={{ gap: 10 }}
-          // onLayout={(e) => {
-          //   console.log('eee', index, e.nativeEvent.layout.height);
-          //   const { height } = e.nativeEvent.layout;
-          //   setItemHeights((prev) => {
-          //     return [...prev, height];
-          //   });
-          // }}
-        >
+        <View className="border-b-[1px] border-b-gray-300 px-[20px] py-[10px]" style={{ gap: 10 }}>
           <View className="h-[15px] flex-row items-center" style={{ gap: 5 }}>
             <Text className="text-[13px] font-semibold" style={{ color: isToday ? '#007AFF' : '#000' }}>
               {getDayText(dayjs(item.date).day())}요일
@@ -143,7 +167,12 @@ const CalendarTodo = (props: ICalendarTodoProps) => {
           </View>
           <TodoItem {...item} />
           <View>
-            <Pressable className="h-[50px] flex-row items-center justify-center rounded-[10px] bg-[#D9D9D9]">
+            <Pressable
+              onPress={() => {
+                setIsVisibleMatrixAdd(true);
+              }}
+              className="h-[50px] flex-row items-center justify-center rounded-[10px] bg-[#D9D9D9]"
+            >
               <Plus size={16} color="#555" />
               <Text className="ml-[5px] text-[#555]">할일 작성</Text>
             </Pressable>

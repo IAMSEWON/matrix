@@ -50,6 +50,10 @@ export const onCheckNotificationPermission = async () => {
   }
 };
 
+export const onRemoveNotification = async (id: string) => {
+  await notifee.cancelNotification(id);
+};
+
 export const onCreateTriggerNotification = async ({
   id,
   time,

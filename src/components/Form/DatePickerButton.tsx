@@ -38,7 +38,7 @@ const DatePickerButton = ({
   rules,
   darkMode,
 }: DatePickerButtonProps) => {
-  const [date, setDate] = useState<Date>(dayjs().toDate());
+  const [date, setDate] = useState<Date>(dayjs().add(5, 'minute').toDate());
 
   const sheetRef = React.useRef<BottomSheetModal>(null);
 
@@ -75,6 +75,7 @@ const DatePickerButton = ({
                 onCancel={() => sheetRef.current?.close()}
                 onConfirm={() => {
                   sheetRef.current?.close();
+
                   onChange(date);
                 }}
                 onConfirmText="선택"
@@ -88,7 +89,7 @@ const DatePickerButton = ({
                   locale="ko"
                   date={value ? dayjs(value).toDate() : date}
                   mode={mode}
-                  minimumDate={new Date()}
+                  minimumDate={dayjs().add(5, 'minute').toDate()}
                   onDateChange={setDate}
                 />
               </SheetModal>

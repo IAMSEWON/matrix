@@ -51,10 +51,8 @@ const WheelPicker = ({
         control={control}
         rules={rules}
         render={({ field: { onChange, value } }) => {
-          const castingValue = (value as string).toString();
-
           return (
-            <AnimatedBorder value={castingValue} error={!!errorMessage}>
+            <AnimatedBorder value={value?.toString()} error={!!errorMessage}>
               <TouchableOpacity
                 onPress={() => {
                   sheetRef.current?.present();
@@ -67,7 +65,7 @@ const WheelPicker = ({
                 }}
               >
                 <Text style={{ fontWeight: 'bold', color: darkMode ? '#fff' : '#1E1F23' }}>
-                  {options.filter((option) => option.value === castingValue)[0]?.label || placeholder}
+                  {options[selectedIndex]?.label || placeholder}
                 </Text>
               </TouchableOpacity>
 
@@ -85,7 +83,7 @@ const WheelPicker = ({
               >
                 <Picker
                   data={options}
-                  value={castingValue}
+                  value={value?.toString()}
                   onValueChanged={({ item }) => {
                     const changedIndex = options.findIndex((option) => option.value === item.value);
 

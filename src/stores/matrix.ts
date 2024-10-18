@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import dayjs from 'dayjs';
 import { create } from 'zustand';
 import { createJSONStorage, persist, PersistOptions } from 'zustand/middleware';
 
@@ -13,7 +14,7 @@ type MatrixStoreType = {
   updatedMatrix: (id: number, name: string) => void;
   deletedMatrix: (id: number) => void;
   // 매트릭스 할 일 핸들러
-  createdTodo: (todo: TodoAddType) => void;
+  createdTodo: (todo: TodoAddType) => number;
   updatedTodo: (todo: TodoUpdateType) => void;
   deletedTodo: ({ categoryId, todoId }: { categoryId: number; todoId: number }) => void;
   checkedTodo: ({ categoryId, todoId }: { categoryId: number; todoId: number }) => void;
@@ -78,7 +79,9 @@ const useMatrixStore = create(
       // 할 일 추가 함수
 
       // 할 일 추가 시 categoryId 값은 선택된 matrix의 categoryId 값
-      createdTodo: (todo) =>
+      createdTodo: (todo) => {
+        let todoIdValue = 0;
+
         set((state) => {
           const { categoryId } = todo;
 
@@ -86,8 +89,11 @@ const useMatrixStore = create(
 
           if (!selectedCategory) return state;
 
+          todoIdValue = (selectedCategory.matrixs[selectedCategory.matrixs.length - 1]?.todoId ?? 0) + 1;
+
           const newTodo: TodoType = {
-            todoId: (selectedCategory.matrixs[selectedCategory.matrixs.length - 1]?.todoId ?? 0) + 1,
+            todoId: todoIdValue,
+            startDate: dayjs().toDate(),
             isChecked: false,
             ...todo,
           };
@@ -103,7 +109,10 @@ const useMatrixStore = create(
                 matrixs: state.matrixs.map((matrix) => (matrix.categoryId === categoryId ? updateMatrix : matrix)),
               }
             : { matrixs: state.matrixs.map((matrix) => (matrix.categoryId === categoryId ? updateMatrix : matrix)) };
-        }),
+        });
+
+        return todoIdValue;
+      },
 
       /*
        *  투두 업데이트 함수
@@ -114,7 +123,7 @@ const useMatrixStore = create(
        * */
       updatedTodo: (todo) =>
         set((state) => {
-          const { categoryId, importance } = todo;
+          const { categoryId } = todo;
 
           const selectedCategory = state.matrixs.find((matrix) => matrix.categoryId === categoryId);
 
@@ -153,7 +162,7 @@ const useMatrixStore = create(
 
           if (!selectedCategory) return state;
 
-          const updatedMatrixs = selectedCategory.matrixs.filter((todo) => todo.todoId !== todoId);
+          const updatedMatrixs = selectedCategory.matrixs.filter((_todo) => _todo.todoId !== todoId);
 
           const updateMatrix = {
             ...selectedCategory,

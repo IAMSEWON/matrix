@@ -84,10 +84,10 @@ const CalendarTodo = (props: ICalendarTodoProps) => {
     const resultArr = isPrev ? [...formatItem, ...items] : [...items, ...formatItem];
     setItems(resultArr);
     if (scrollType === 'current') {
-      const index = resultArr.findIndex(
-        (i) => dayjs(i.date).format('YYYYMMDD') === dayjs(currentDate).format('YYYYMMDD'),
-      );
-      scrollIndex = index === -1 ? null : index - 1;
+      const index = resultArr.findIndex((i) => {
+        return dayjs(i.date).format('YYYYMMDD') === dayjs(currentDate).format('YYYYMMDD');
+      });
+      scrollIndex = index === -1 ? null : Math.max(0, index);
     }
     if (scrollIndex !== null) {
       setTimeout(() => {
@@ -125,9 +125,9 @@ const CalendarTodo = (props: ICalendarTodoProps) => {
   // 달력에서 일자를 변경한 경우
   React.useEffect(() => {
     if (items.length === 0) return;
-    const currentDateIndex = items.findIndex(
-      (i) => dayjs(i.date).format('YYYYMMDD') === dayjs(currentDate).format('YYYYMMDD'),
-    );
+    const currentDateIndex = items.findIndex((i) => {
+      return dayjs(i.date).format('YYYYMMDD') === dayjs(currentDate).format('YYYYMMDD');
+    });
     // 현재 생성된 일자배열에 해당 날짜가 있는 경우 scroll만
     if (currentDateIndex !== -1) {
       scrollRef?.current?.scrollToIndex({ animated: true, index: currentDateIndex });
@@ -141,16 +141,6 @@ const CalendarTodo = (props: ICalendarTodoProps) => {
       initDates(formatCurrentDate.toDate(), 'current');
     }
   }, [currentDate]);
-
-  // const onMomentumScrollEnd = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-  //   console.log('onMomentumScrollEnd', e.nativeEvent);
-  // };
-  // const onViewableItemsChanged = (info: {
-  //   viewableItems: ViewToken<ICalendarTotoItem>[];
-  //   changed: ViewToken<ICalendarTotoItem>[];
-  // }) => {
-  //   console.log('onViewableItemsChanged', info.viewableItems[0]);
-  // };
 
   const RenderItem = React.useCallback(
     ({ item }: { item: ICalendarTotoItem }) => {
@@ -222,8 +212,6 @@ const CalendarTodo = (props: ICalendarTodoProps) => {
           initialScrollIndex={initialScrollIndex > 0 ? initialScrollIndex : undefined}
           getItemLayout={getItemLayout}
           keyExtractor={(item) => item.date.toISOString()}
-          // onMomentumScrollEnd={onMomentumScrollEnd}
-          // onViewableItemsChanged={onViewableItemsChanged}
           viewabilityConfig={{
             itemVisiblePercentThreshold: 100,
           }}

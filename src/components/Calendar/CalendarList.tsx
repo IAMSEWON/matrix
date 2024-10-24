@@ -52,6 +52,10 @@ const CalendarList = ({
     },
     [calendarType, currentDate, isScrolling],
   );
+
+  const resetToday = () => {
+    onPressDay(new Date());
+  };
   const changePrevMonth = React.useCallback(() => {
     let prev = new Date();
     if (calendarType === 'month') {
@@ -172,6 +176,9 @@ const CalendarList = ({
           <Text className="text-lg font-bold">{dayjs(currentDate).format('YYYY년 M월')}</Text>
         </View>
         <View className="flex-row gap-2">
+          <TouchableOpacity className="justify-center" onPress={resetToday}>
+            <Text className="text-[15px] font-semibold">오늘</Text>
+          </TouchableOpacity>
           <TouchableOpacity onPress={changePrevMonth}>
             <SquareChevronLeft color="#000" size={30} style={{}} />
           </TouchableOpacity>

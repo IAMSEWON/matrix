@@ -101,7 +101,7 @@ const CalendarTodo = (props: ICalendarTodoProps) => {
 
   React.useEffect(() => {
     initDates(dayjs().set('date', 1).toDate());
-  }, [matrixs]);
+  }, []);
 
   // 맨위 스크롤 도달 시 기존 데이터 앞에 일자 배열 추가
   const onStartReached = () => {

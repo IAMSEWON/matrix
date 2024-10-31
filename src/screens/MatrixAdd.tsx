@@ -19,7 +19,12 @@ import useMatrixStore from '@/stores/matrix.ts';
 import { useMatrixAdd } from '@/stores/matrixAdd.ts';
 import { TodoAddType, TodoUpdateType } from '@/types/matrix.ts';
 import { HomeStackParamList } from '@/types/navigation.ts';
-import { onCreateTriggerNotification, onRemoveNotification } from '@/utils/notifications.ts';
+import {
+  onCheckNotificationPermission,
+  onCreateTriggerNotification,
+  onRemoveNotification,
+  onRequestNotificationPermission,
+} from '@/utils/notifications.ts';
 
 dayjs.extend(duration);
 
@@ -52,6 +57,7 @@ const MatrixAdd = ({ navigation }: MatrixAddNavigationProp) => {
     reset,
     watch,
     trigger,
+    setFocus,
   } = useForm<TodoAddType>({
     defaultValues: resetTodoValue,
     mode: 'onChange',
@@ -106,9 +112,16 @@ const MatrixAdd = ({ navigation }: MatrixAddNavigationProp) => {
     }
 
     // 수정 시 todoId 값 추가
-    const todoData: TodoAddType | TodoUpdateType = editMatrix ? { ...data, todoId: editMatrix.todoId } : { ...data };
+    const todoData: TodoAddType | TodoUpdateType = editMatrix
+      ? {
+          ...data,
+          categoryId: Number(data.categoryId),
+          todoId: editMatrix.todoId,
+          originalCategoryId: editMatrix.categoryId,
+        }
+      : { ...data, categoryId: Number(data.categoryId) };
 
-    if (editMatrix) {
+    if (editMatrix !== null) {
       updatedTodo(todoData as TodoUpdateType);
 
       if (data.alram === 'N' || data.endDate !== editMatrix.endDate || data.alramTime !== editMatrix.alramTime) {
@@ -125,6 +138,25 @@ const MatrixAdd = ({ navigation }: MatrixAddNavigationProp) => {
     setIsVisibleMatrixAdd(false);
     onResetHandler();
   };
+
+  const onPressAlramPermissionHandler = async () => {
+    const alramPermission = await onRequestNotificationPermission();
+
+    if (!alramPermission) {
+      await onCheckNotificationPermission();
+      return false;
+    }
+
+    return alramPermission;
+  };
+
+  useEffect(() => {
+    if (isVisibleMatrixAdd) {
+      if (editMatrix) return;
+
+      setFocus('content');
+    }
+  }, [isVisibleMatrixAdd, editMatrix]);
 
   useEffect(() => {
     if (isVisibleMatrixAdd && matrix?.categoryId) {
@@ -232,12 +264,13 @@ const MatrixAdd = ({ navigation }: MatrixAddNavigationProp) => {
           control={control}
           errors={errors.alram}
           options={[
-            { label: '알림 받기', value: 'Y' },
+            { label: '알림 받기', value: 'Y', onPress: onPressAlramPermissionHandler },
             { label: '알림 받지 않기', value: 'N' },
           ].map((item) => {
             return {
               label: item.label,
               value: item.value,
+              onPress: item.onPress ? item.onPress : undefined,
             };
           })}
           darkMode={colorScheme === 'dark'}

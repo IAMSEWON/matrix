@@ -68,7 +68,6 @@ const WheelPicker = ({
                   {options[selectedIndex]?.label || placeholder}
                 </Text>
               </TouchableOpacity>
-
               <SheetModal
                 ref={sheetRef}
                 title={title || ''}

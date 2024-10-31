@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react';
-import { TouchableNativeFeedback } from 'react-native';
+import { ColorValue, TouchableNativeFeedback } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { Check } from 'lucide-react-native';
 
 interface CheckBoxProps {
   onPress: () => void;
   checked: boolean;
-  backgroundColor?: string;
+  backgroundColor?: ColorValue;
   size?: 'small' | 'medium' | 'large';
 }
 

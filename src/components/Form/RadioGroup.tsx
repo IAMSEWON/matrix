@@ -13,7 +13,7 @@ type RadioGroupProps = {
   control: Control<TodoAddType>;
   name: keyof TodoAddType;
   label: string;
-  options: { label: string; value: string }[];
+  options: { label: string; value: string; onPress?: () => Promise<boolean> }[];
   type?: 'MATRIX' | 'DEFAULT';
   errors?: FieldError;
   errorMessage?: string;
@@ -46,7 +46,14 @@ const RadioGroup = ({
               return (
                 <AnimatedBorder key={option.value} value={option.value === value ? value : ''} error={!!errorMessage}>
                   <Pressable
-                    onPress={() => onChange(option.value)}
+                    onPress={async () => {
+                      if (option.onPress) {
+                        const check = await option.onPress();
+
+                        if (!check) return;
+                      }
+                      onChange(option.value);
+                    }}
                     className="flex-1 items-center justify-center"
                     style={{
                       paddingHorizontal: 8,

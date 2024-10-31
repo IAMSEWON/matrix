@@ -1,15 +1,13 @@
 import React, { useEffect } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { View } from 'react-native';
 import ContextMenu from 'react-native-context-menu-view';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import dayjs from 'dayjs';
-import { Timer } from 'lucide-react-native';
 import { useColorScheme } from 'nativewind';
 
 import FadeInFadeOut from '@/components/Animation/FadeInOut.tsx';
-import CheckBox from '@/components/CheckBox.tsx';
 import Layout from '@/components/Layout/Layout.tsx';
-import { alramTimeOptions } from '@/data/time.ts';
+import TodoItem from '@/components/TodoItem.tsx';
 import useMatrixStore from '@/stores/matrix.ts';
 import { useMatrixAdd } from '@/stores/matrixAdd.ts';
 import { HomeStackParamList } from '@/types/navigation.ts';
@@ -83,65 +81,13 @@ const MatrixTodo = ({ route }: MatrixTodoNavigationProp) => {
               actions={[{ title: '수정' }, { title: '삭제' }]}
             >
               <FadeInFadeOut fadeIn style={{ flex: 0 }}>
-                <View className="flex-col justify-between p-2" style={{ gap: 10 }}>
-                  <View className="flex-row items-center" style={{ gap: 10 }}>
-                    <CheckBox
-                      onPress={() => onCheckTodoHandler(matrix.categoryId, item.todoId)}
-                      backgroundColor={color}
-                      checked={item.isChecked}
-                    />
-                    <Text
-                      className="mr-6 text-lg"
-                      style={{
-                        textDecorationLine: item.isChecked ? 'line-through' : 'none',
-                        color,
-                      }}
-                    >
-                      {item.content}
-                    </Text>
-                  </View>
-                  <Pressable onPress={() => {}} key={item.todoId} className="flex-row items-center" style={{ gap: 8 }}>
-                    <Text
-                      className="items-center overflow-hidden rounded px-1 py-0.5 text-xs"
-                      style={{
-                        borderRadius: 4,
-                        backgroundColor,
-                        color,
-                      }}
-                    >
-                      {dayjs(item.endDate).format('MM월 DD일')}
-                    </Text>
-                    <Text
-                      className="items-center overflow-hidden rounded px-1 py-0.5 text-xs"
-                      style={{
-                        borderRadius: 4,
-                        backgroundColor,
-                        color,
-                      }}
-                    >
-                      {dayjs(item.endDate).format('A HH:mm')}
-                    </Text>
-                    <View
-                      className="flex-row overflow-hidden rounded px-1 py-0.5 text-xs"
-                      style={{
-                        borderRadius: 4,
-                        backgroundColor,
-                        gap: 2,
-                        alignItems: 'center',
-                      }}
-                    >
-                      <Timer size={12} color={color} className="" />
-                      <Text
-                        className="text-xs"
-                        style={{
-                          color,
-                        }}
-                      >
-                        {alramTimeOptions.find((option) => option.value === item.alramTime)?.label}
-                      </Text>
-                    </View>
-                  </Pressable>
-                </View>
+                <TodoItem
+                  item={item}
+                  onCheckTodoHandler={onCheckTodoHandler}
+                  color={color}
+                  categoryId={matrix.categoryId}
+                  backgroundColor={backgroundColor}
+                />
               </FadeInFadeOut>
             </ContextMenu>
           );

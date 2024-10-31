@@ -32,7 +32,7 @@ export const onCheckNotificationPermission = async () => {
   const settings = await notifee.getNotificationSettings();
 
   if (settings.authorizationStatus === AuthorizationStatus.AUTHORIZED) {
-    return true;
+    return;
   }
   if (settings.authorizationStatus === AuthorizationStatus.DENIED) {
     Alert.alert('권한 요청', '일정 알림 설정을 위한\n알림 권한이 필요합니다.', [

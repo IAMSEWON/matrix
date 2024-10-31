@@ -34,6 +34,8 @@ const SwipeText = ({ value, texts, onScroll, onPress, darkMode }: SwipeTextProps
     height: PAGE_WIDTH / 2,
   } as const;
 
+  const defaultIndex = Math.max(0, texts?.indexOf(value) ?? 0);
+
   return (
     <>
       <Carousel
@@ -44,7 +46,7 @@ const SwipeText = ({ value, texts, onScroll, onPress, darkMode }: SwipeTextProps
         autoPlay={false}
         data={texts}
         onSnapToItem={onScroll}
-        defaultIndex={texts.length > 0 ? texts.indexOf(value) : 0}
+        defaultIndex={defaultIndex}
         renderItem={({ item }) => (
           <TapGestureHandler>
             <Pressable onPress={onPress} className="ml-8 mt-1.5 items-center justify-center">

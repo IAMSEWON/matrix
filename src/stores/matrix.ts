@@ -57,7 +57,10 @@ const useMatrixStore = create(
             categoryName: name,
           };
 
-          return { matrixs: [...state.matrixs.slice(0, index), updatedMatrix, ...state.matrixs.slice(index + 1)] };
+          return {
+            matrix: state.matrix?.categoryId === updatedMatrix.categoryId ? updatedMatrix : { ...state.matrix },
+            matrixs: [...state.matrixs.slice(0, index), updatedMatrix, ...state.matrixs.slice(index + 1)],
+          };
         }),
       // 매트릭스 삭제 함수
       // 삭제할 id와 matrix id 값이 동일한 경우 삭제 후 matrix 초기화

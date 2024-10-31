@@ -125,90 +125,52 @@ const useMatrixStore = create(
         set((state) => {
           const { categoryId, originalCategoryId } = todo;
 
-          // 변경될 categoryId의 아이디와 originalCategoryId가 같을 경우 todo 객체 값 변경
-          // 변경될 categoryId의 아이디와 originalCategoryId가 다를 경우 기존 카테고리의 todo 객체 값 삭제 후 변경된 카테고리의 todo 리스트의  객체 값 push
+          const selectedCategory = state.matrixs.find((matrix) => matrix.categoryId === categoryId);
+
+          if (!selectedCategory) return state;
 
           if (categoryId === originalCategoryId) {
-            const selectedCategory = state.matrixs.find((matrix) => matrix.categoryId === categoryId);
-
-            if (!selectedCategory) return state;
+            const updateTodo = { ...todo, categoryId: categoryId ?? 0 };
 
             const index = selectedCategory.matrixs.findIndex((_todo) => _todo.todoId === todo.todoId);
-
-            const updatedTodo = {
-              ...selectedCategory.matrixs[index],
-              ...todo,
-            };
 
             const updateMatrix = {
               ...selectedCategory,
               matrixs: [
                 ...selectedCategory.matrixs.slice(0, index),
-                updatedTodo,
+                updateTodo,
                 ...selectedCategory.matrixs.slice(index + 1),
               ],
             };
 
-            return state.matrix?.categoryId === categoryId
-              ? {
-                  matrix: updateMatrix,
-                  matrixs: state.matrixs.map((matrix) => (matrix.categoryId === categoryId ? updateMatrix : matrix)),
-                }
-              : { matrixs: state.matrixs.map((matrix) => (matrix.categoryId === categoryId ? updateMatrix : matrix)) };
+            return {
+              matrix: updateMatrix,
+              matrixs: state.matrixs.map((matrix) => (matrix.categoryId === categoryId ? updateMatrix : matrix)),
+            };
           }
 
-          const selectedCategory = state.matrixs.find((matrix) => matrix.categoryId === categoryId);
+          const todoIdValue = (selectedCategory.matrixs[selectedCategory.matrixs.length - 1]?.todoId ?? 0) + 1;
 
-          if (!selectedCategory) return state;
-
-          const updatedTodo = {
-            ...todo,
-            todoId: (selectedCategory.matrixs[selectedCategory.matrixs.length - 1]?.todoId ?? 0) + 1,
-          };
+          const updateTodo = { ...todo, categoryId: categoryId ?? 0, todoId: todoIdValue };
 
           const updateMatrix = {
             ...selectedCategory,
-            matrixs: [...selectedCategory.matrixs, updatedTodo],
+            matrixs: [...selectedCategory.matrixs, updateTodo],
+          };
+
+          const deleteMatrix = state.matrixs.find((matrix) => matrix.categoryId === originalCategoryId);
+
+          const deleteTodo = deleteMatrix?.matrixs.filter((_todo) => _todo.todoId !== todo.todoId);
+
+          const updateDeleteMatrix = {
+            ...deleteMatrix,
+            matrixs: deleteTodo,
           };
 
           return {
-            matrix: updateMatrix,
-            matrixs: state.matrixs.map((matrix) =>
-              matrix.categoryId === originalCategoryId
-                ? { ...matrix, matrixs: matrix.matrixs.filter((_todo) => _todo.todoId !== todo.todoId) }
-                : matrix,
-            ),
+            matrix: updateDeleteMatrix,
+            matrixs: state.matrixs.map((matrix) => (matrix.categoryId === categoryId ? updateMatrix : matrix)),
           };
-
-          //   const updatedMatrixs = state.matrixs.map((matrix) => {
-          //     if (matrix.categoryId === categoryId) {
-          //       const index = matrix.matrixs.findIndex((_todo) => _todo.todoId === todo.todoId);
-          //
-          //       const updatedTodo = {
-          //         ...matrix.matrixs[index],
-          //         ...todo,
-          //       };
-          //
-          //       return {
-          //         ...matrix,
-          //         matrixs: [...matrix.matrixs.slice(0, index), updatedTodo, ...matrix.matrixs.slice(index + 1)],
-          //       };
-          //     }
-          //
-          //     if (matrix.categoryId === originalCategoryId) {
-          //       return {
-          //         ...matrix,
-          //         matrixs: matrix.matrixs.filter((_todo) => _todo.todoId !== todo.todoId),
-          //       };
-          //     }
-          //
-          //     return matrix;
-          //   });
-          //
-          //   return {
-          //     matrix: updatedMatrixs.find((matrix) => matrix.categoryId === originalCategoryId),
-          //     matrixs: updatedMatrixs,
-          //   };
         }),
 
       // 할 일 삭제 함수

@@ -22,7 +22,7 @@ export type TodoType = {
 export type TodoAddType = Omit<TodoType, 'todoId' | 'isChecked'> & { categoryId: number };
 
 // 할 일 수정 시 타입
-export type TodoUpdateType = Omit<TodoType, 'isChecked'> & { categoryId: number } & { originalCategoryId?: number };
+export type TodoUpdateType = TodoType & { categoryId: number } & { originalCategoryId?: number };
 
 // 매트릭스 타입
 export type MatrixType = {

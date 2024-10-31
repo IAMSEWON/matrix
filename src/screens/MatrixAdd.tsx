@@ -135,8 +135,7 @@ const MatrixAdd = ({ navigation }: MatrixAddNavigationProp) => {
       await onTriggerTodoHandler(`${data?.categoryId}-${todoId}`, { ...data });
     }
 
-    setIsVisibleMatrixAdd(false);
-    onResetHandler();
+    onCloseHandler();
   };
 
   const onPressAlramPermissionHandler = async () => {

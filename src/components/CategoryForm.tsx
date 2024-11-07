@@ -63,20 +63,20 @@ const CategoryForm = ({ matrixs, open, onClose, updateId }: CategoryFormProps) =
   };
 
   useEffect(() => {
-    if (updateId) {
+    if (open && updateId) {
       const isMatchedMatrix = matrixs.find((matrix) => matrix.categoryId === updateId);
       if (isMatchedMatrix) {
         setCategoryValue(isMatchedMatrix.categoryName);
         inputRef.current?.focus();
       }
     }
-  }, [updateId]);
+  }, [open, updateId]);
 
   return (
     <Modal animationType="slide" visible={open} onRequestClose={onCloseModal} presentationStyle="pageSheet">
       <Layout>
         {/* 모달 카테고리 닫기 버튼 */}
-        <View className="flex-[0.1] flex-row items-center justify-between px-2 py-2">
+        <View className="flex-row items-center justify-between">
           <Pressable className="h-12 w-12 items-center justify-center" onPress={onAddCategory}>
             <Text className="text-lg font-semibold dark:text-white">완료</Text>
           </Pressable>

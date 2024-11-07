@@ -63,14 +63,14 @@ const CategoryForm = ({ matrixs, open, onClose, updateId }: CategoryFormProps) =
   };
 
   useEffect(() => {
-    if (updateId) {
+    if (open && updateId) {
       const isMatchedMatrix = matrixs.find((matrix) => matrix.categoryId === updateId);
       if (isMatchedMatrix) {
         setCategoryValue(isMatchedMatrix.categoryName);
         inputRef.current?.focus();
       }
     }
-  }, [updateId]);
+  }, [open, updateId]);
 
   return (
     <Modal animationType="slide" visible={open} onRequestClose={onCloseModal} presentationStyle="pageSheet">

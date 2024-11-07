@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Dimensions, Pressable, Text } from 'react-native';
+import { TapGestureHandler } from 'react-native-gesture-handler';
 import type { ICarouselInstance } from 'react-native-reanimated-carousel';
 import Carousel from 'react-native-reanimated-carousel';
 import { useNavigation } from '@react-navigation/core';
@@ -33,6 +34,8 @@ const SwipeText = ({ value, texts, onScroll, onPress, darkMode }: SwipeTextProps
     height: PAGE_WIDTH / 2,
   } as const;
 
+  const defaultIndex = Math.max(0, texts?.indexOf(value) ?? 0);
+
   return (
     <>
       <Carousel
@@ -42,23 +45,24 @@ const SwipeText = ({ value, texts, onScroll, onPress, darkMode }: SwipeTextProps
         style={{ width: '85%' }}
         autoPlay={false}
         data={texts}
-        pagingEnabled={false}
         onSnapToItem={onScroll}
-        defaultIndex={texts.length > 0 ? texts.indexOf(value) : 0}
+        defaultIndex={defaultIndex}
         renderItem={({ item }) => (
-          <Pressable onPress={onPress} className="ml-8 mt-1.5 items-center justify-center">
-            <Text
-              className="text-xl font-semibold"
-              style={[
-                {
-                  color: darkMode ? '#ffffff' : '#000000',
-                },
-              ]}
-              numberOfLines={1}
-            >
-              {item}
-            </Text>
-          </Pressable>
+          <TapGestureHandler>
+            <Pressable onPress={onPress} className="ml-8 mt-1.5 items-center justify-center">
+              <Text
+                className="text-xl font-semibold"
+                style={[
+                  {
+                    color: darkMode ? '#ffffff' : '#000000',
+                  },
+                ]}
+                numberOfLines={1}
+              >
+                {item}
+              </Text>
+            </Pressable>
+          </TapGestureHandler>
         )}
       />
       <HeaderIcon

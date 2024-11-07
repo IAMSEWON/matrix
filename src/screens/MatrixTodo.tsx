@@ -69,6 +69,7 @@ const MatrixTodo = ({ route }: MatrixTodoNavigationProp) => {
                     importance: item.importance,
                     alram: item.alram,
                     alramTime: item.alramTime,
+                    isChecked: item.isChecked,
                   });
                 } else {
                   deletedTodo({
